@@ -6,6 +6,7 @@ import request from './request'
 import { logger } from '../logger'
 import callback from './connection/callback'
 import { dispatch } from './response'
+import store from '../renderer/store'
 
 let buffer = Buffer.alloc(0) // Data buffer
 /**
@@ -73,44 +74,75 @@ function createPayload (packet) {
 }
 
 let aliveInterval = null // The setInterval instance for alive packet
+let retryTimeout = null // The setTimeout instance for retrying
 let retryCount = 0 // Retry times when connection error
 
-export let client // Socket instance
+/**
+ * Retrying to connect server
+ */
+function reconnectServer () {
+  if (aliveInterval !== null) {
+    clearInterval(aliveInterval)
+    aliveInterval = null
+  }
+  /* Retry to reconnect */
+  if (retryCount < config.connection.MAX_RETRY_TIMES && retryTimeout === null) {
+    retryCount++
+    logger.info(`Trying to reconnect in ${config.connection.RETRY_PERIOD} ms. ${retryCount}`)
+    retryTimeout = setTimeout(connectServer, config.connection.RETRY_PERIOD)
+  }
+}
+
+export let client = null // Socket instance
 
 /**
  * Connect to server
  */
 export function connectServer () {
+  /* Clear current connection */
+  if (client !== null) {
+    client.end()
+    client = null
+  }
   /* Create socket connection to server */
   const { PORT, HOST } = config.server
   const net = require('net')
   logger.info(`Establishing connection`)
+  store.dispatch('updateConnectionStatus', { isConnecting: true, isConnected: false })
   client = net.createConnection(PORT, HOST)
   /* Event when connected */
   client.on('connect', () => {
+    store.dispatch('updateConnectionStatus', { isConnecting: false, isConnected: true })
     retryCount = 0 // Reset retry time counter
     logger.info(`Connection established to ${HOST}:${PORT}`)
     /* Register setInterval instance for alive packet sending to keep connection */
+    if (aliveInterval !== null) {
+      clearInterval(aliveInterval)
+      aliveInterval = null
+    }
     aliveInterval = setInterval(() => {
       request.alive()
     }, 5000)
+    if (retryTimeout !== null) {
+      clearTimeout(retryTimeout)
+      retryTimeout = null
+    }
   })
   /* Event when connection closed */
   client.on('close', () => {
-    if (aliveInterval !== null) {
-      clearInterval(aliveInterval)
-    }
+    store.dispatch('updateConnectionStatus', { isConnecting: false, isConnected: false })
+    logger.info('Connection closed')
+    reconnectServer()
   })
   /* Event when error occurs */
   client.on('error', (err) => {
+    store.dispatch('updateConnectionStatus', { isConnecting: false, isConnected: false })
     logger.error(`Socket error: ${err}`)
-    client.end()
-    /* Retry to reconnect */
-    if (retryCount < config.connection.MAX_RETRY_TIMES) {
-      retryCount++
-      logger.info(`Trying to reconnect in ${config.connection.RETRY_PERIOD} ms. ${retryCount}`)
-      setTimeout(connectServer, config.connection.RETRY_PERIOD)
+    if (client !== null) {
+      client.end()
+      client = null
     }
+    reconnectServer()
   })
   /* Event when receiving data */
   client.on('data', processData)

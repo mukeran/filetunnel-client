@@ -1,7 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow } from 'electron'
-import '../renderer/store'
+import { registerIpc } from './ipc'
 
 /**
  * Set `__static` path to static files in production
@@ -46,6 +46,8 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+registerIpc()
 
 /**
  * Auto Updater
