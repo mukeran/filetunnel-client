@@ -1,34 +1,22 @@
 <template>
   <div>
-    <router-link :to="{ name: 'Login' }">login</router-link>
+    {{ username }}
+    {{ uid }}
   </div>
 </template>
 
 <script>
-  import Login from './Login'
   import { mapState } from 'vuex'
   export default {
     name: 'LandingPage',
-    components: { Login },
     mounted () {
       document.title = 'Welcome to FileTunnel'
-      this.$store.commit('updateUserInfo', { uid: 123, username: '123' })
-    },
-    methods: {
-      t () {
-        alert(this.text)
-      }
-    },
-    data () {
-      return {
-        isLoggedIn: false,
-        test: 1,
-        text: ''
-      }
+      this.$store.dispatch('updateUserInfo', { uid: 123, username: '123' })
     },
     computed: {
       ...mapState({
-        username: state => state.user.username
+        username: state => state.user.username,
+        uid: state => state.user.uid
       })
     }
   }

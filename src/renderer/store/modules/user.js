@@ -10,7 +10,14 @@ const mutations = {
   }
 }
 
+const actions = {
+  updateUserInfo ({ commit }, { uid, username }) {
+    commit('updateUserInfo', { uid, username })
+  }
+}
+
 export default {
   state,
-  mutations
+  mutations,
+  actions
 }
