@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "author": "mukeran <mukeran@mukeran.com>",
   "description": "A project to share file with friends safely.",
-  "license": null,
+  "license": "MIT",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "element-ui": "^2.13.2",
     "log4js": "^6.3.0",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",

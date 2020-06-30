@@ -4,6 +4,7 @@
 import { ipcMain } from 'electron'
 import { connectServer } from '../client'
 import request from '../client/request'
+import { logger } from '../logger'
 
 const channels = {
   'connectServer': () => connectServer(),
@@ -13,6 +14,11 @@ const channels = {
       .then((packet) => {
         event.sender.send('register-done', packet)
       })
+  },
+  'requestFriendList': (event) => {
+    logger.fatal('test')
+    request.requestFriendList()
+    event.sender.send('requestFriendList.done')
   }
 }
 

@@ -1,12 +1,12 @@
 <template>
   <div>
-    messageList
+    historyList
   </div>
 </template>
 
 <script>
   export default {
-    name: 'MessageList'
+    name: 'HistoryList'
   }
 </script>
 

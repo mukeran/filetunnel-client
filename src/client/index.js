@@ -2,11 +2,11 @@
  * Client functions
  */
 import config from '../config'
-import request from './request'
 import { logger } from '../logger'
 import callback from './connection/callback'
 import { dispatch } from './response'
 import store from '../renderer/store'
+import request from './request'
 
 let buffer = Buffer.alloc(0) // Data buffer
 /**
