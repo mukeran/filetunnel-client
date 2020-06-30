@@ -4,7 +4,7 @@
 
 <script>
   export default {
-    name: 'Send'
+    name: 'ServerConnection'
   }
 </script>
 

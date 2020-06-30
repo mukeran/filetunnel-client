@@ -4,7 +4,7 @@
 
 <script>
   export default {
-    name: 'AcceptTransfer'
+    name: 'NewTransfer'
   }
 </script>
 

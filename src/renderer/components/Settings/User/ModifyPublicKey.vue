@@ -4,7 +4,7 @@
 
 <script>
   export default {
-    name: 'ReceiveFile'
+    name: 'ModifyPublicKey'
   }
 </script>
 

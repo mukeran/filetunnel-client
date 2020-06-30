@@ -56,10 +56,13 @@
 </template>
 
 <script>
-  import SendFile from './SendFile'
+  import SendFile from './NewTransfer'
   export default {
     name: 'FriendList',
     components: {SendFile},
+    mounted () {
+      document.title = '好友列表 - FileTunnel'
+    },
     data () {
       return {
         friends: [

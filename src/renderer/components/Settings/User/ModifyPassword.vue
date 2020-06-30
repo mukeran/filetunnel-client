@@ -1,12 +1,10 @@
 <template>
-  <div>
-    historyList
-  </div>
+
 </template>
 
 <script>
   export default {
-    name: 'HistoryList'
+    name: 'ModifyPassword'
   }
 </script>
 

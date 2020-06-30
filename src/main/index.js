@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import { registerIpc } from './ipc'
 
 /**
@@ -10,6 +10,9 @@ import { registerIpc } from './ipc'
 if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
+
+/* Hide application menu */
+Menu.setApplicationMenu(null)
 
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
@@ -23,7 +26,9 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     height: 563,
     useContentSize: true,
-    width: 1000
+    width: 1000,
+    minWidth: 650,
+    minHeight: 300
   })
 
   mainWindow.loadURL(winURL)
