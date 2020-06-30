@@ -18,9 +18,14 @@
     watch: {
       isConnected (to) {
         if (to) {
-          ipcRenderer.send('login', {
-            username: '123',
-            password: '123'
+          ipcRenderer.on('register-done', (event, args) => {
+            console.log(event)
+            console.log(args)
+          })
+          ipcRenderer.send('register', {
+            username: '12345',
+            password: '123',
+            email: 'test@test.com'
           })
         }
       }

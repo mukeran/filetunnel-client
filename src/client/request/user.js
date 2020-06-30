@@ -1,5 +1,6 @@
 import { sendRequest } from '../index'
 
 export default {
-  login: (username, password) => sendRequest({ action: 'login', data: { username, password } })
+  login: (username, password) => sendRequest({ action: 'login', data: { username, password } }),
+  register: (username, password, email) => sendRequest({ action: 'register', data: { username, password, email } })
 }
