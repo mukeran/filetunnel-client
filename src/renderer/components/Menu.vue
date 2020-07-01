@@ -26,9 +26,10 @@
       <el-popover
         placement="bottom"
         width="200"
-        trigger="hover">
+        trigger="click">
         <el-menu-item class="menu-item menu-item-right" style="padding: 0 5px" slot="reference">
-          <i class="el-icon-chat-dot-square"></i>
+          <i class="el-icon-chat-dot-square" style="margin: 0"></i>
+          <el-badge :value="friendRequestLength" :hidden="friendRequestLength === 0"></el-badge>
         </el-menu-item>
         <FriendRequest/>
       </el-popover>
@@ -51,13 +52,18 @@
 </template>
 
 <script>
-  import FriendRequest from './FriendRequest'
+  import FriendRequest from './FriendRequestList'
   import { mapState } from 'vuex'
   import status from '../../client/status'
   import { ipcRenderer } from 'electron'
   export default {
     name: 'Menu',
     components: { FriendRequest },
+    data () {
+      return {
+        friendRequestLength: 2
+      }
+    },
     computed: {
       active () {
         if (this.$route.path.startsWith('/settings')) {

@@ -31,6 +31,8 @@
 </template>
 
 <script>
+  import { ipcRenderer } from 'electron'
+  import status from '../../client/status'
   export default {
     name: 'Login',
     props: {
@@ -58,7 +60,19 @@
     },
     methods: {
       login () {
-        alert('login')
+        ipcRenderer.once('loggedIn', (event, packet) => {
+          if (packet.status === status.OK) {
+            this.$store.dispatch('updateUserInfo', {
+              _id: packet.data._id,
+              username: packet.data.username,
+              sessionId: packet.data.sessionId
+            })
+            this.$emit('logged-in')
+          } else if (packet.status === status.FAILED) {
+            this.$message.error('登录失败')
+          }
+        })
+        ipcRenderer.send('login', { username: this.form.username, password: this.form.password })
       },
       register () {
         alert('register')

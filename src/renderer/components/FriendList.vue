@@ -1,8 +1,12 @@
 <template>
   <div>
+    <el-button type="primary" size="small" @click="isAddFriendDialogVisible = true">
+      <i class="el-icon-plus"></i>添加好友
+    </el-button>
     <el-table
       :data="friends"
       stripe
+      empty-text="你还没有好友哦，赶快去添加吧！"
       style="width: 100%">
       <el-table-column
         prop="_id"
@@ -49,6 +53,12 @@
       </el-table-column>
     </el-table>
     <el-dialog
+      title="添加好友"
+      :visible.sync="isAddFriendDialogVisible"
+    >
+      <AddFriend/>
+    </el-dialog>
+    <el-dialog
       title="发送文件"
       :visible.sync="isNewTransferDialogVisible"
     >
@@ -58,91 +68,47 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex'
+  import { ipcRenderer } from 'electron'
+  import status from '../../client/status'
+  import AddFriend from './AddFriend'
   import NewTransfer from './NewTransfer'
   export default {
     name: 'FriendList',
-    components: { NewTransfer },
+    components: { AddFriend, NewTransfer },
     mounted () {
       document.title = '好友列表 - FileTunnel'
+      if (this.sessionId !== null && this.connectionStatus === status.connection.CONNECTED) {
+        this.requestFriendList()
+      }
     },
     data () {
       return {
         isNewTransferDialogVisible: false,
-        friends: [
-          {
-            _id: '123',
-            username: 'mukeran',
-            isNAT: false,
-            isOnline: true,
-            ip: '127.0.0.1',
-            port: 12345,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '122131312334',
-            username: 'mukeran123123123123123',
-            isNAT: false,
-            isOnline: false,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          },
-          {
-            _id: '123123123121345',
-            username: 'mukeran123123123123123',
-            isNAT: true,
-            isOnline: true,
-            lastSeen: new Date().toISOString()
-          }
-        ]
+        isAddFriendDialogVisible: false
       }
+    },
+    methods: {
+      requestFriendList () {
+        ipcRenderer.once('friendListRequested', (event, packet) => {
+          this.$store.dispatch('updateFriendList', { friends: packet.data.friends })
+        })
+        ipcRenderer.send('requestFriendList')
+      }
+    },
+    watch: {
+      sessionId (to) {
+        if (to !== null && this.connectionStatus === status.connection.CONNECTED) {
+          this.requestFriendList()
+        }
+      }
+    },
+    computed: {
+      ...mapState({
+        sessionId: state => state.user.sessionId,
+        connectionStatus: state => state.system.connectionStatus,
+        friends: state => state.friend.list
+      })
     }
   }
 </script>
