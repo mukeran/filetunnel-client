@@ -12,9 +12,6 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-/* Hide application menu */
-Menu.setApplicationMenu(null)
-
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
@@ -39,7 +36,11 @@ function createWindow () {
   })
 }
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+  createWindow()
+  /* Hide application menu */
+  Menu.setApplicationMenu(Menu.buildFromTemplate([]))
+})
 
 app.on('window-all-closed', async () => {
   if (client !== null) {

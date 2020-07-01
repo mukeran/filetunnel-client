@@ -4,21 +4,24 @@
 import { ipcMain } from 'electron'
 import { connectServer, registerAliveTimeout } from '../client'
 import request from '../client/request'
-import { logger } from '../logger'
 
 const channels = {
   connectServer: () => connectServer(),
-  'login': (event, { username, password }) => request.login(username, password),
-  'register': (event, { username, password, email }) => {
+  login: (event, { username, password }) => {
+    request.login(username, password)
+      .then((packet) => {
+        event.sender.send('loggedIn', packet)
+      })
+  },
+  register: (event, { username, password, email }) => {
     request.register(username, password, email)
       .then((packet) => {
         event.sender.send('registered', packet)
       })
   },
-  'requestFriendList': (event) => {
-    logger.fatal('test')
+  requestFriendList: (event) => {
     request.requestFriendList()
-    event.sender.send('requestFriendList.done')
+    event.sender.send('friendListRequested')
   },
   calculateHash: (event, { filePath }) => {
     const fs = require('fs')

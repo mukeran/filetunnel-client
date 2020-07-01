@@ -14,7 +14,7 @@
       title="登录/注册"
       :visible.sync="isLoginDialogVisible"
     >
-      <Auth :show-title="false"/>
+      <Auth :show-title="false" @logged-in="isLoginDialogVisible = false"/>
     </el-dialog>
   </el-container>
 </template>
