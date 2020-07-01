@@ -8,7 +8,12 @@ import { logger } from '../logger'
 
 const channels = {
   connectServer: () => connectServer(),
-  'login': (event, { username, password }) => request.login(username, password),
+  'login': (event, { username, password }) => {
+    request.login(username, password)
+      .then((packet) => {
+        event.sender.send('loggedIn', packet)
+      })
+  },
   'register': (event, { username, password, email }) => {
     request.register(username, password, email)
       .then((packet) => {
@@ -19,6 +24,12 @@ const channels = {
     logger.fatal('test')
     request.requestFriendList()
     event.sender.send('requestFriendList.done')
+  },
+  logout: (event) => {
+    request.logout()
+      .then((packet) => {
+        event.sender.send('loggedOut', packet)
+      })
   },
   calculateHash: (event, { filePath }) => {
     const fs = require('fs')

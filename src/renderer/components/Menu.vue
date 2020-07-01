@@ -74,6 +74,16 @@
     },
     methods: {
       logout () {
+        ipcRenderer.once('loggedOut', (event, packet) => {
+          if (packet.status === status.OK) {
+            this.$store.dispatch('updateUserInfo', {
+              _id: null,
+              username: null,
+              sessionId: null
+            })
+          }
+        })
+        ipcRenderer.send('logout')
       },
       reconnectServer () {
         if (this.connectionStatus === status.connection.DISCONNECTED) {

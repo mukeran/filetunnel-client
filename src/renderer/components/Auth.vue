@@ -31,40 +31,66 @@
 </template>
 
 <script>
-  export default {
-    name: 'Login',
-    props: {
-      showTitle: {
-        type: Boolean,
-        default: true
-      },
-      showRegister: {
-        type: Boolean,
-        default: true
-      },
-      validator: function (value) {
-        return ['login', 'register'].indexOf(value) !== -1
-      }
+import status from '../../client/status'
+import { ipcRenderer } from 'electron'
+export default {
+  name: 'Login',
+  props: {
+    showTitle: {
+      type: Boolean,
+      default: true
     },
-    data () {
-      return {
-        isLoginMode: true,
-        form: {
-          username: '',
-          password: '',
-          repeatPassword: ''
+    showRegister: {
+      type: Boolean,
+      default: true
+    },
+    validator: function (value) {
+      return ['login', 'register'].indexOf(value) !== -1
+    }
+  },
+  data () {
+    return {
+      isLoginMode: true,
+      form: {
+        username: '',
+        password: '',
+        repeatPassword: ''
+      }
+    }
+  },
+  methods: {
+    login () {
+      ipcRenderer.once('loggedIn', (event, packet) => {
+        console.log('888888888888')
+        if (packet.status === status.OK) {
+          this.$store.dispatch('updateUserInfo', {
+            _id: packet.data._id,
+            username: packet.data.username,
+            sessionId: packet.data.sessionId
+          })
+          this.$emit('logged-in')
+        } else if (packet.status === status.FAILED) {
+          this.$message.error('登录失败')
         }
-      }
+      })
+      ipcRenderer.send('login', { username: this.form.username, password: this.form.password })
     },
-    methods: {
-      login () {
-        alert('login')
-      },
-      register () {
-        alert('register')
+    register () {
+      ipcRenderer.once('registered', (event, packet) => {
+        if (packet.status === status.OK) {
+          alert('注册成功')
+        } else {
+          alert('注册失败')
+        }
+      })
+      if (this.form.password === this.form.repeatPassword) {
+        ipcRenderer.send('register', { username: this.form.username, password: this.form.password })
+      } else {
+        alert('两次密码不一致')
       }
     }
   }
+}
 </script>
 
 <style scoped>

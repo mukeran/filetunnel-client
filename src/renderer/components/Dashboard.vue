@@ -14,7 +14,7 @@
       title="登录/注册"
       :visible.sync="isLoginDialogVisible"
     >
-      <Auth :show-title="false"/>
+      <Auth :show-title="false" @logged-in="isLoginDialogVisible = false"/>
     </el-dialog>
   </el-container>
 </template>
@@ -50,9 +50,8 @@
             this.$route.name !== 'FriendList' && this.$router.push({ name: 'FriendList' })
           })
           ipcRenderer.send('resumeSession')
-        } else {
-          ipcRenderer.send('registerAliveTimeout')
         }
+        ipcRenderer.send('registerAliveTimeout')
       }
     },
     watch: {
