@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-header class="header">
-      <Menu/>
+      <Menu @login-click="isLoginDialogVisible = true"/>
     </el-header>
     <el-main id="main" class="main">
       <el-row>
@@ -10,14 +10,72 @@
         </el-col>
       </el-row>
     </el-main>
+    <el-dialog
+      title="登录/注册"
+      :visible.sync="isLoginDialogVisible"
+    >
+      <Auth :show-title="false"/>
+    </el-dialog>
   </el-container>
 </template>
 
 <script>
   import Menu from './Menu'
+  import Auth from './Auth'
+  import { ipcRenderer } from 'electron'
+  import { mapState } from 'vuex'
+  import status from '../../client/status'
   export default {
     name: 'Dashboard',
-    components: { Menu }
+    components: { Menu, Auth },
+    data () {
+      return {
+        isLoginDialogVisible: false
+      }
+    },
+    mounted () {
+      if (this.$route.name === 'Dashboard') {
+        this.$router.push({ name: 'FriendList' })
+      }
+      if (this.connectionStatus === status.connection.DISCONNECTED) {
+        ipcRenderer.send('connectServer')
+      } else if (this.connectionStatus === status.connection.CONNECTED) {
+        this.resumeSession()
+      }
+    },
+    methods: {
+      resumeSession () {
+        if (this.sessionId !== null) {
+          ipcRenderer.once('sessionResumed', () => {
+            this.$route.name !== 'FriendList' && this.$router.push({ name: 'FriendList' })
+          })
+          ipcRenderer.send('resumeSession')
+        } else {
+          ipcRenderer.send('registerAliveTimeout')
+        }
+      }
+    },
+    watch: {
+      $route (to) {
+        if (to.name === 'Dashboard') {
+          this.$router.push({ name: 'FriendList' })
+        }
+      },
+      connectionStatus (newStatus) {
+        if (newStatus === status.connection.CONNECTED) {
+          this.$message.success('服务器已连接')
+          this.resumeSession()
+        } else if (newStatus === status.connection.DISCONNECTED) {
+          this.$message.error('服务器连接已断开')
+        }
+      }
+    },
+    computed: {
+      ...mapState({
+        connectionStatus: state => state.system.connectionStatus,
+        sessionId: state => state.user.sessionId
+      })
+    }
   }
 </script>
 

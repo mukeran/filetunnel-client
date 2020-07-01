@@ -1,9 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import LandingPage from '../components/LandingPage'
-import Login from '../components/Login'
-import Register from '../components/Register'
 import Dashboard from '../components/Dashboard'
 import FriendList from '../components/FriendList'
 import MessageList from '../components/TransferList'
@@ -18,21 +15,6 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'LandingPage',
-      component: LandingPage
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      component: Login
-    },
-    {
-      path: '/register',
-      name: 'Register',
-      component: Register
-    },
-    {
-      path: '/dashboard',
       name: 'Dashboard',
       component: Dashboard,
       children: [

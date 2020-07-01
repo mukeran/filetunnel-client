@@ -2,6 +2,7 @@
 
 import { app, BrowserWindow, Menu } from 'electron'
 import { registerIpc } from './ipc'
+import { client } from '../client'
 
 /**
  * Set `__static` path to static files in production
@@ -24,10 +25,10 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    height: 563,
+    height: 600,
     useContentSize: true,
     width: 1000,
-    minWidth: 650,
+    minWidth: 1000,
     minHeight: 300
   })
 
@@ -40,7 +41,10 @@ function createWindow () {
 
 app.on('ready', createWindow)
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  if (client !== null) {
+    await client.end()
+  }
   if (process.platform !== 'darwin') {
     app.quit()
   }

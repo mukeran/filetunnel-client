@@ -1,18 +1,20 @@
 const state = {
-  uid: null,
-  username: null
+  _id: null,
+  username: null,
+  sessionId: null
 }
 
 const mutations = {
-  updateUserInfo (state, { uid, username }) {
-    state.uid = uid
+  updateUserInfo (state, { _id, username, sessionId }) {
+    state._id = _id
     state.username = username
+    state.sessionId = sessionId
   }
 }
 
 const actions = {
-  updateUserInfo ({ commit }, { uid, username }) {
-    commit('updateUserInfo', { uid, username })
+  updateUserInfo ({ commit }, { _id, username, sessionId }) {
+    commit('updateUserInfo', { _id, username, sessionId })
   }
 }
 

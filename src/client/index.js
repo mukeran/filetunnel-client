@@ -7,6 +7,7 @@ import callback from './connection/callback'
 import { dispatch } from './response'
 import store from '../renderer/store'
 import request from './request'
+import status from './status'
 
 let buffer = Buffer.alloc(0) // Data buffer
 /**
@@ -73,23 +74,45 @@ function createPayload (packet) {
   return data.length + '\n' + data // Add data.length info
 }
 
-let aliveInterval = null // The setInterval instance for alive packet
-let retryTimeout = null // The setTimeout instance for retrying
-let retryCount = 0 // Retry times when connection error
+let aliveTimeout = null
+let doStopAliveTimeout = false
+/**
+ * Register alive timeout
+ */
+export function registerAliveTimeout () {
+  if (aliveTimeout !== null) {
+    clearTimeout(aliveTimeout)
+    aliveTimeout = null
+  }
+  doStopAliveTimeout = false
+  aliveTimeout = setTimeout(() => {
+    aliveTimeout = null
+    request.alive()
+      .then(() => {
+        if (!doStopAliveTimeout) {
+          registerAliveTimeout()
+        }
+      })
+      .catch(async () => {
+        logger.error('Alive timeout')
+        if (client !== null) {
+          client.end()
+          client = null
+        }
+        await store.dispatch('updateConnectionStatus', { connectionStatus: status.connection.DISCONNECTED })
+      })
+  }, config.connection.ALIVE_PERIOD)
+}
 
 /**
- * Retrying to connect server
+ * Stop alive timeout
  */
-function reconnectServer () {
-  if (aliveInterval !== null) {
-    clearInterval(aliveInterval)
-    aliveInterval = null
-  }
-  /* Retry to reconnect */
-  if (retryCount < config.connection.MAX_RETRY_TIMES && retryTimeout === null) {
-    retryCount++
-    logger.info(`Trying to reconnect in ${config.connection.RETRY_PERIOD} ms. ${retryCount}`)
-    retryTimeout = setTimeout(connectServer, config.connection.RETRY_PERIOD)
+export function stopAliveTimeout () {
+  if (aliveTimeout !== null) {
+    clearTimeout(aliveTimeout)
+    aliveTimeout = null
+  } else {
+    doStopAliveTimeout = true
   }
 }
 
@@ -98,7 +121,7 @@ export let client = null // Socket instance
 /**
  * Connect to server
  */
-export function connectServer () {
+export async function connectServer () {
   /* Clear current connection */
   if (client !== null) {
     client.end()
@@ -108,41 +131,25 @@ export function connectServer () {
   const { PORT, HOST } = config.server
   const net = require('net')
   logger.info(`Establishing connection`)
-  store.dispatch('updateConnectionStatus', { isConnecting: true, isConnected: false })
+  await store.dispatch('updateConnectionStatus', { connectionStatus: status.connection.CONNECTING })
   client = net.createConnection(PORT, HOST)
   /* Event when connected */
-  client.on('connect', () => {
-    store.dispatch('updateConnectionStatus', { isConnecting: false, isConnected: true })
-    retryCount = 0 // Reset retry time counter
+  client.on('connect', async () => {
+    await store.dispatch('updateConnectionStatus', { connectionStatus: status.connection.CONNECTED })
     logger.info(`Connection established to ${HOST}:${PORT}`)
-    /* Register setInterval instance for alive packet sending to keep connection */
-    if (aliveInterval !== null) {
-      clearInterval(aliveInterval)
-      aliveInterval = null
-    }
-    aliveInterval = setInterval(() => {
-      request.alive()
-    }, 5000)
-    if (retryTimeout !== null) {
-      clearTimeout(retryTimeout)
-      retryTimeout = null
-    }
+    registerAliveTimeout()
   })
-  /* Event when connection closed */
-  client.on('close', () => {
-    store.dispatch('updateConnectionStatus', { isConnecting: false, isConnected: false })
-    logger.info('Connection closed')
-    reconnectServer()
+  /* Event when connection ended */
+  client.on('end', async () => {
+    await store.dispatch('updateConnectionStatus', { connectionStatus: status.connection.DISCONNECTED })
+    logger.info('Connection ended')
+    stopAliveTimeout()
+    client = null
   })
   /* Event when error occurs */
-  client.on('error', (err) => {
-    store.dispatch('updateConnectionStatus', { isConnecting: false, isConnected: false })
+  client.on('error', async (err) => {
+    await store.dispatch('updateConnectionStatus', { connectionStatus: status.connection.DISCONNECTED })
     logger.error(`Socket error: ${err}`)
-    if (client !== null) {
-      client.end()
-      client = null
-    }
-    reconnectServer()
   })
   /* Event when receiving data */
   client.on('data', processData)

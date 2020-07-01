@@ -13,5 +13,10 @@ export default {
     PAUSED: 7,
     WAITING: 8,
     FAILED: 9
+  },
+  connection: {
+    CONNECTED: 0,
+    CONNECTING: 1,
+    DISCONNECTED: 2
   }
 }

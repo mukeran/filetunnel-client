@@ -39,32 +39,35 @@
         fixed="right"
         width="180">
         <template slot-scope="scope">
-          <el-dropdown>
-            <el-button type="primary" size="mini">
-              <i class="el-icon-s-promotion"></i>发送<i class="el-icon-arrow-down"></i>
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>在线发送</el-dropdown-item>
-              <el-dropdown-item>离线发送</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+          <el-button
+            type="primary"
+            size="mini"
+            @click="isNewTransferDialogVisible = true"
+          ><i class="el-icon-s-promotion"></i>发送</el-button>
           <el-button type="danger" size="mini"><i class="el-icon-delete-solid"></i>删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <el-dialog
+      title="发送文件"
+      :visible.sync="isNewTransferDialogVisible"
+    >
+      <NewTransfer/>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-  import SendFile from './NewTransfer'
+  import NewTransfer from './NewTransfer'
   export default {
     name: 'FriendList',
-    components: {SendFile},
+    components: { NewTransfer },
     mounted () {
       document.title = '好友列表 - FileTunnel'
     },
     data () {
       return {
+        isNewTransferDialogVisible: false,
         friends: [
           {
             _id: '123',

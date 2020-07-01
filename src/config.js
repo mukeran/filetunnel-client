@@ -7,8 +7,8 @@ export default {
     PORT: 10088
   },
   connection: {
+    ALIVE_PERIOD: 10000,
     MAX_RETRY_TIMES: 3,
-    RETRY_PERIOD: 5000,
     MAX_SEQUENCE_NUMBER: 65536,
     RESPONSE_TIMEOUT: 30000
   }
