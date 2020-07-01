@@ -15,6 +15,13 @@
         <el-form-item label="密码">
           <el-input type="password" v-model="form.password" @keyup.enter.native="isLoginMode ? login() : register()"></el-input>
         </el-form-item>
+        <el-form-item v-if="isLoginMode" label="私钥路径">
+          <el-input type="text" v-model="form.privateKeyPath" disabled>
+            <template slot="append">
+              <el-button @click="selectPrivateKeyPath">选择路径</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
         <el-form-item v-if="!isLoginMode" label="重复密码">
           <el-input type="password" v-model="form.repeatPassword" @keyup.enter.native="register"></el-input>
         </el-form-item>
@@ -63,7 +70,7 @@
       }
     },
     mounted () {
-      this.form.privateKeySavePath = remote.app.getPath('userData') + '/privateKey.pem'
+      this.form.privateKeyPath = this.form.privateKeySavePath = remote.app.getPath('userData') + '/privateKey.pem'
     },
     data () {
       return {
@@ -74,6 +81,7 @@
           repeatPassword: '',
           publicKey: '',
           privateKey: '',
+          privateKeyPath: '',
           privateKeySavePath: ''
         }
       }
@@ -86,6 +94,9 @@
               _id: packet.data._id,
               username: packet.data.username,
               sessionId: packet.data.sessionId
+            })
+            this.$store.dispatch('updatePrivateKeyPath', {
+              privateKeyPath: this.form.privateKeyPath
             })
             this.$emit('logged-in')
           } else if (packet.status === status.FAILED) {
@@ -123,6 +134,16 @@
         }, savePath => {
           if (typeof savePath !== 'undefined') {
             this.form.privateKeySavePath = savePath
+          }
+        })
+      },
+      selectPrivateKeyPath () {
+        remote.dialog.showOpenDialog({
+          properties: ['openFile'],
+          defaultPath: this.form.privateKeyPath
+        }, path => {
+          if (typeof path[0] !== 'undefined') {
+            this.form.privateKeyPath = path[0]
           }
         })
       }
