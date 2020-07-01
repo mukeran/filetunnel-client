@@ -48,7 +48,7 @@
             size="mini"
             @click="isNewTransferDialogVisible = true"
           ><i class="el-icon-s-promotion"></i>发送</el-button>
-          <el-button type="danger" size="mini"><i class="el-icon-delete-solid"></i>删除</el-button>
+          <el-button type="danger" size="mini" @click="deleteFriend(scope.row._id)"><i class="el-icon-delete-solid"></i>删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -94,6 +94,8 @@
           this.$store.dispatch('updateFriendList', { friends: packet.data.friends })
         })
         ipcRenderer.send('requestFriendList')
+      },
+      deleteFriend (_id) {
       }
     },
     watch: {
