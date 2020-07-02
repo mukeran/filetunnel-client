@@ -85,7 +85,10 @@
     data () {
       return {
         isNewTransferDialogVisible: false,
-        isAddFriendDialogVisible: false
+        isAddFriendDialogVisible: false,
+        // for test
+        sessionId: '1212',
+        connectionStatus: status.connection.CONNECTED
       }
     },
     methods: {
@@ -95,7 +98,13 @@
         })
         ipcRenderer.send('requestFriendList')
       },
-      deleteFriend (_id) {
+      deleteFriend (userID) {
+        console.log('ID: ' + userID)
+        ipcRenderer.once('deleteFinished', (event, packet) => {
+          console.log('deleted')
+          this.requestFriendList()
+        })
+        ipcRenderer.send('deleteFriend', { userID })
       }
     },
     watch: {
@@ -107,14 +116,13 @@
     },
     computed: {
       ...mapState({
-        sessionId: state => state.user.sessionId,
-        connectionStatus: state => state.system.connectionStatus,
-        friends: state => state.friend.list
+        // sessionId: state => state.user.sessionId,
+        // connectionStatus: state => state.system.connectionStatus,
+        friends: state => state.friend.friendlist
       })
     }
   }
 </script>
 
 <style scoped>
-
 </style>

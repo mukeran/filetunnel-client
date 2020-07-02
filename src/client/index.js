@@ -173,3 +173,11 @@ export function sendRequest (packet, timeout = config.connection.RESPONSE_TIMEOU
     }, timeout))
   })
 }
+
+export function sendResponse (packet, reqPacket) {
+  const payload = createPayload({ ...packet, sq: reqPacket.sq })
+  logger.debug(`Ready to send payload ${payload}`)
+  client.write(payload, () => {
+    logger.debug(`Sent payload ${payload}`)
+  })
+}

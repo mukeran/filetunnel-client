@@ -36,7 +36,9 @@ const channels = {
   },
   requestFriendList: (event) => {
     request.requestFriendList()
-    event.sender.send('friendListRequested')
+      .then((packet) => {
+        event.sender.send('friendListRequested', packet)
+      })
   },
   calculateHash: (event, { filePath }) => {
     const fs = require('fs')
@@ -52,6 +54,26 @@ const channels = {
     })
   },
   registerAliveTimeout: () => registerAliveTimeout(),
+  sendFriendRequest: (event, {username}) => {
+    request.sendFriendRequest(username)
+      .then((packet) => {
+        event.sender.send('requestSended')
+      })
+  },
+
+  deleteFriend: (event, {userID}) => {
+    request.deleteFriend(userID)
+      .then((packet) => {
+        event.sender.send('deleteFinished', packet)
+      })
+  },
+  answerFriendRequest: (event, {_id, operation}) => {
+    request.answerFriendRequest(_id, operation)
+      .then((packet) => {
+        event.sender.send('requestAnswered')
+      })
+  },
+  'friendTransferRequest': (event, { userID }) => request.friendTransferRequest(userID)
   generateKeyPair: (event) => {
     const NodeRSA = require('node-rsa')
     const key = new NodeRSA({ b: 2048 })
