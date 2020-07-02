@@ -38,6 +38,8 @@ export default {
       ipcRenderer.once('passwordChanged', (event, packet) => {
         if (packet.status === status.OK) {
           alert('Password changed')
+          // 发出一个事件，更改密码界面不可见
+          this.$emit('password-changed')
         } else {
           alert('Failed to change password')
         }
@@ -45,7 +47,7 @@ export default {
       if (this.form.newPassword === this.form.repeatNewPassword) {
         console.log('sending packet')
         ipcRenderer.send('changePassword', {username: this._id, password: this.form.oldPassword, newPassword: this.form.newPassword})
-        console.log(this.username + '  9999   ' + this._id)
+        // console.log(this.username + '  9999   ' + this._id)
       } else {
         alert('两次密码不一致')
       }

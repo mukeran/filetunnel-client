@@ -54,6 +54,7 @@
 <script>
   import { ipcRenderer, remote } from 'electron'
   import status from '../../client/status'
+  import { mapState } from 'vuex'
   export default {
     name: 'Login',
     props: {
@@ -93,12 +94,14 @@
             this.$store.dispatch('updateUserInfo', {
               _id: packet.data._id,
               username: packet.data.username,
-              sessionId: packet.data.sessionId
+              sessionId: packet.data.sessionId,
+              publicKey: packet.data.publicKey
             })
             this.$store.dispatch('updatePrivateKeyPath', {
               privateKeyPath: this.form.privateKeyPath
             })
             this.$emit('logged-in')
+            alert('logged in, your publicKey is :\n' + packet.data.publicKey)
           } else if (packet.status === status.FAILED) {
             this.$message.error('登录失败')
           }
@@ -162,6 +165,13 @@
           }
         })
       }
+    },
+    computed: {
+      ...mapState({
+        _id: state => state.user._id,
+        username: state => state.user.username,
+        publicKey: state => state.publicKey
+      })
     }
   }
 </script>

@@ -22,6 +22,7 @@
       <el-submenu class="menu-item menu-item-right" index="user">
         <template slot="title"><i class="el-icon-s-custom"></i>{{ username }}</template>
         <el-menu-item @click="logout"><i class="el-icon-error"></i>登出</el-menu-item>
+        <el-menu-item @click="showPublicKey"><i class="el-icon-error"></i>获取公钥</el-menu-item>
       </el-submenu>
       <el-popover
         placement="bottom"
@@ -75,7 +76,8 @@
       ...mapState({
         connectionStatus: state => state.system.connectionStatus,
         sessionId: state => state.user.sessionId,
-        username: state => state.user.username
+        username: state => state.user.username,
+        publicKey: state => state.user.publicKey
       })
     },
     methods: {
@@ -85,11 +87,15 @@
             this.$store.dispatch('updateUserInfo', {
               _id: null,
               username: null,
-              sessionId: null
+              sessionId: null,
+              publicKey: null
             })
           }
         })
         ipcRenderer.send('logout')
+      },
+      showPublicKey () {
+        alert('your public key is :\n' + this.publicKey)
       },
       reconnectServer () {
         if (this.connectionStatus === status.connection.DISCONNECTED) {

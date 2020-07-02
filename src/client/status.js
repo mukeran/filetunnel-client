@@ -3,7 +3,7 @@
  */
 export default {
   OK: 0,
-  FAILED: 1,
+  FAILED: -1,
   transfer: {
     REQUEST: 1,
     CONNECTING: 2,
