@@ -1,12 +1,12 @@
 <template>
   <el-container>
     <el-header class="header">
-      <Menu @login-click="isLoginDialogVisible = true"/>
+      <Menu @login-click="isLoginDialogVisible = true" @friend-changed="refreshFriendList"/>
     </el-header>
     <el-main id="main" class="main">
       <el-row>
         <el-col :span="18" :offset="3">
-          <router-view></router-view>
+          <router-view ref="main"></router-view>
         </el-col>
       </el-row>
     </el-main>
@@ -52,6 +52,11 @@
           ipcRenderer.send('resumeSession')
         }
         ipcRenderer.send('registerAliveTimeout')
+      },
+      refreshFriendList () {
+        if (this.$route.name === 'FriendList') {
+          this.$refs.main.requestFriendList()
+        }
       }
     },
     watch: {

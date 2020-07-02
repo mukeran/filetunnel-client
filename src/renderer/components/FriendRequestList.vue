@@ -27,6 +27,7 @@ import { ipcRenderer } from 'electron'
         ipcRenderer.once('friendRequestAnswered', (event, packet) => {
           if (packet.status === status.OK) {
             this.$store.dispatch('removeFriendRequest', _id)
+            this.$emit('friend-changed')
           }
         })
         ipcRenderer.send('answerFriendRequest', { _id, operation })

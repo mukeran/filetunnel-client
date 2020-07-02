@@ -31,7 +31,7 @@
           <i class="el-icon-chat-dot-square" style="margin: 0"></i>
           <el-badge :value="friendRequestLength" :hidden="friendRequestLength === 0"></el-badge>
         </el-menu-item>
-        <FriendRequest/>
+        <FriendRequest @friend-changed="$emit('friend-changed')"/>
       </el-popover>
     </template>
 

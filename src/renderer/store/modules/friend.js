@@ -10,8 +10,8 @@ const mutations = {
   updateFriendRequests (state, { friendRequests }) {
     state.friendRequests = friendRequests
   },
-  removeFriendRequests (state, _id) {
-    state.friendRequests = state.friendRequests.filter(friendRequest => friendRequest._id === _id)
+  removeFriendRequest (state, _id) {
+    state.friendRequests = state.friendRequests.filter(friendRequest => friendRequest._id !== _id)
   }
 }
 
@@ -22,8 +22,8 @@ const actions = {
   updateFriendRequests ({ commit }, { friendRequests }) {
     commit('updateFriendRequests', { friendRequests })
   },
-  removeFriendRequests ({ commit }, _id) {
-    commit('removeFriendRequests', _id)
+  removeFriendRequest ({ commit }, _id) {
+    commit('removeFriendRequest', _id)
   }
 }
 
