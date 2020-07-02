@@ -19,22 +19,45 @@
 </template>
 
 <script>
-  export default {
-    name: 'ModifyPassword',
-    data () {
-      return {
-        form: {
-          oldPassword: '',
-          newPassword: '',
-          repeatNewPassword: ''
-        }
-      }
-    },
-    methods: {
-      modifyPassword () {
+import { ipcRenderer } from 'electron'
+import status from '../../../../client/status'
+import { mapState } from 'vuex'
+export default {
+  name: 'ModifyPassword',
+  data () {
+    return {
+      form: {
+        oldPassword: '',
+        newPassword: '',
+        repeatNewPassword: ''
       }
     }
+  },
+  methods: {
+    modifyPassword () {
+      ipcRenderer.once('passwordChanged', (event, packet) => {
+        if (packet.status === status.OK) {
+          alert('Password changed')
+        } else {
+          alert('Failed to change password')
+        }
+      })
+      if (this.form.newPassword === this.form.repeatNewPassword) {
+        console.log('sending packet')
+        ipcRenderer.send('changePassword', {username: this._id, password: this.form.oldPassword, newPassword: this.form.newPassword})
+        console.log(this.username + '  9999   ' + this._id)
+      } else {
+        alert('两次密码不一致')
+      }
+    }
+  },
+  computed: {
+    ...mapState({
+      _id: state => state.user._id,
+      username: state => state.user.username
+    })
   }
+}
 </script>
 
 <style scoped>

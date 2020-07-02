@@ -106,6 +106,14 @@
         ipcRenderer.send('login', { username: this.form.username, password: this.form.password })
       },
       register () {
+        ipcRenderer.once('registered', (event, packet) => {
+          if (packet.status === status.OK) {
+            alert('注册成功')
+          } else {
+            console.log(packet)
+            alert('注册失败')
+          }
+        })
         if (this.form.publicKey === '') {
           this.$message.error('请先生成公私钥对')
           return
@@ -118,6 +126,13 @@
           }
           this.$message.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
           // 执行 register 操作
+          if (this.form.password === this.form.repeatPassword) {
+            console.log('77777------------------sending datapacket------------------7777777777777777')
+            ipcRenderer.send('register', {username: this.form.username, password: this.form.password, publicKey: this.form.publicKey})
+            // console.log('444----------4444\n'+packet)
+          } else {
+            alert('两次密码不一致')
+          }
         })
       },
       generateKeyPair () {

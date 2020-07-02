@@ -13,10 +13,22 @@ const channels = {
         event.sender.send('loggedIn', packet)
       })
   },
-  register: (event, { username, password, email }) => {
-    request.register(username, password, email)
+  register: (event, { username, password, publicKey }) => {
+    request.register(username, password, publicKey)
       .then((packet) => {
         event.sender.send('registered', packet)
+      })
+  },
+  changePassword: (event, { username, password, newPassword }) => {
+    request.changePassword(username, password, newPassword)
+      .then((packet) => {
+        event.sender.send('passwordChanged', packet)
+      })
+  },
+  logout: (event) => {
+    request.logout()
+      .then((packet) => {
+        event.sender.send('loggedOut', packet)
       })
   },
   requestFriendList: (event) => {
