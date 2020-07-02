@@ -26,16 +26,16 @@ function processData (data) {
   }
   /* Get the size of payload */
   let size = parseInt(buffer.slice(0, pos).toString())
-  buffer = buffer.slice(pos + 1)
   if (size <= 1) {
     logger.error(`Wrong payload size: ${size}`)
     return
   }
   /* Check if received incomplete payload */
-  if (buffer.length < size) {
+  if (buffer.length - pos - 1 < size) {
     logger.info('Received incomplete payload')
     return
   }
+  buffer = buffer.slice(pos + 1)
   /* Convert JSON to Object. Detect parse error */
   let packet
   try {

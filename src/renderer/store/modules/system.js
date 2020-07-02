@@ -2,7 +2,7 @@ import status from '../../../client/status'
 
 const state = {
   connectionStatus: status.connection.DISCONNECTED,
-  transferPort: 12345,
+  transferPort: 0,
   privateKeyPath: ''
 }
 
@@ -12,6 +12,9 @@ const mutations = {
   },
   updatePrivateKeyPath (state, { privateKeyPath }) {
     state.privateKeyPath = privateKeyPath
+  },
+  updateTransferPort (state, { port }) {
+    state.transferPort = port
   }
 }
 
@@ -21,6 +24,9 @@ const actions = {
   },
   updatePrivateKeyPath ({ commit }, { privateKeyPath }) {
     commit('updatePrivateKeyPath', { privateKeyPath })
+  },
+  updateTransferPort ({ commit }, { port }) {
+    commit('updateTransferPort', { port })
   }
 }
 

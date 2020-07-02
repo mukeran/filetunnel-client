@@ -4,6 +4,9 @@
 import { ipcMain } from 'electron'
 import { connectServer, registerAliveTimeout } from '../client'
 import request from '../client/request'
+import { logger } from '../logger'
+import { send } from '../p2p/client'
+import { startServer } from '../p2p/server'
 
 const channels = {
   connectServer: () => connectServer(),
@@ -43,6 +46,12 @@ const channels = {
     const publicKey = key.exportKey('pkcs1-public-pem')
     const privateKey = key.exportKey('pkcs1-private-pem')
     event.sender.send('keyPairGenerated', { publicKey, privateKey })
+  },
+  startTransferServer: () => { startServer().catch((err) => { logger.error(err) }) },
+  sendFile: (event, { ip, port, myUid, targetUid, deadline, filePath, size, sha1 }) => {
+    send(ip, port, myUid, targetUid, deadline, filePath, size, sha1).catch(err => {
+      logger.error(err)
+    })
   }
 }
 

@@ -5,7 +5,7 @@
         <div class="transfer-control">
           <div>
             <span style="font-size: 20px">{{ transfer.filename }}</span>
-            <span style="font-size: 12px">{{ transfer.size }}</span>
+            <span style="font-size: 12px">{{ getReadableFileSizeString(transfer.size) }}</span>
             <el-tag size="mini" type="primary" v-if="transfer.status === status.transfer.REQUEST">
               <i class="el-icon-question"></i>请求
             </el-tag>
@@ -21,7 +21,7 @@
             <el-tag size="mini" type="danger" v-else-if="transfer.status === status.transfer.FAILED">
               <i class="el-icon-warning"></i>失败
             </el-tag>
-            <el-tag size="mini" type="danger" v-else-if="transfer.status === status.transfer.DENIED">
+            <el-tag size="mini" type="danger" v-else-if="transfer.status === status.transfer.REJECTED">
               <i class="el-icon-error"></i>拒绝
             </el-tag>
             <el-tag size="mini" type="success" v-if="transfer.mode === 0">在线中转</el-tag>
@@ -47,7 +47,7 @@
               <template v-else-if="transfer.status === status.transfer.FAILED">
                 失败时间：{{ new Date(transfer.failedTime).toLocaleString() }}
               </template>
-              <template v-else-if="transfer.status === status.transfer.DENIED">
+              <template v-else-if="transfer.status === status.transfer.REJECTED">
                 请求时间：{{ new Date(transfer.requestTime).toLocaleString() }}
               </template>
             </span><br>
@@ -64,25 +64,25 @@
               :stroke-width="25"
               style="width: 75%"
               ></el-progress>
-            <span style="font-size: 13px">{{ transfer.speed }}</span>
+            <span style="font-size: 13px">{{ getReadableFileSizeString(transfer.speed) }}/s</span>
           </template>
           <template v-else>&nbsp;</template>
         </div>
       </el-col>
       <el-col :span="5" style="height: 100%">
         <div v-if="transfer.status === status.transfer.REQUEST" class="transfer-control">
-          <el-button type="primary" icon="el-icon-check" circle></el-button>
-          <el-button type="danger" icon="el-icon-close" circle></el-button>
+          <el-button type="primary" icon="el-icon-check" @click="() => { handleRequest({ accept: true }) }" circle></el-button>
+          <el-button type="danger" icon="el-icon-close" @click="() => { handleRequest({ accept: false }) }" circle></el-button>
         </div>
         <div v-else-if="transfer.status === status.transfer.TRANSFERRING" class="transfer-control">
-          <el-button type="danger" icon="el-icon-close" circle></el-button>
+          <el-button type="danger" icon="el-icon-close" @click="cancelTransfer" circle></el-button>
         </div>
         <div v-else-if="transfer.status === status.transfer.FINISHED" class="transfer-control">
-          <el-button type="primary" icon="el-icon-folder-opened" circle></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle></el-button>
+          <el-button type="primary" icon="el-icon-folder-opened" @click="openFolder" circle></el-button>
+          <el-button type="danger" icon="el-icon-delete" @click="removeTransfer" circle></el-button>
         </div>
         <div v-else class="transfer-control">
-          <el-button type="danger" icon="el-icon-delete" circle></el-button>
+          <el-button type="danger" icon="el-icon-delete" @click="removeTransfer" circle></el-button>
         </div>
       </el-col>
     </el-row>
@@ -91,6 +91,8 @@
 
 <script>
   import status from '../../client/status'
+  import { ipcRenderer, shell, remote } from 'electron'
+  import { dirname } from 'path'
 
   export default {
     name: 'Transfer',
@@ -99,6 +101,44 @@
     },
     computed: {
       status: () => status
+    },
+    methods: {
+      getReadableFileSizeString: function (fileSizeInBytes) {
+        var i = -1
+        var byteUnits = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
+        do {
+          fileSizeInBytes = fileSizeInBytes / 1024
+          i++
+        } while (fileSizeInBytes > 1024)
+
+        return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i]
+      },
+      handleRequest: function ({ accept }) {
+        let _id = this.transfer._id
+        if (!accept) {
+          ipcRenderer.emit('fileRequest' + _id, { accept })
+          return
+        }
+        remote.dialog.showSaveDialog({
+          title: '选择保存路径',
+          defaultPath: this.transfer.filename
+        }).then(result => {
+          if (result.canceled) {
+            return
+          }
+          this.$store.dispatch('updatePath', { filePath: result.filePath })
+          ipcRenderer.emit('fileRequest' + _id, { accept, filePath: result.filePath })
+        })
+      },
+      removeTransfer: function () {
+        this.$store.dispatch('removeTransfer', { _id: this.transfer._id })
+      },
+      cancelTransfer: function () {
+        ipcRenderer.emit('cancelTransfer' + this.transfer._id)
+      },
+      openFolder: function () {
+        shell.openItem(dirname(this.transfer.filePath))
+      }
     }
   }
 </script>

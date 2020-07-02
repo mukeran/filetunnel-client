@@ -1,7 +1,3 @@
-export function createServer () {
-
-}
-
-export function createConnection () {
-
-}
+/**
+ * p2p functions
+ */
