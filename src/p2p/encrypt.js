@@ -1,3 +1,4 @@
+import { logger } from '../logger'
 
 /**
  * encrypt related functions
@@ -9,7 +10,7 @@ const { createWriteStream, createReadStream } = require('fs')
 const { IVInserter } = require('./streams')
 const path = require('path')
 
-let cipherAlgorithm = 'AES-256-CBC'
+export const cipherAlgorithm = 'AES-256-CBC'
 let salt = Buffer.from('838645f4bbc979bd349287f2ad3559be', 'hex')
 
 /**
@@ -70,6 +71,7 @@ export function verifyString (message, sign, publicKey) {
 }
 
 export function encryptKey (key, publicKey) {
+  logger.debug()
   return publicEncrypt(publicKey, key).toString('base64')
 }
 

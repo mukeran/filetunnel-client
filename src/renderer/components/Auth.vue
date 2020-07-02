@@ -107,7 +107,8 @@
             this.$message.error('未知错误')
           }
         })
-        ipcRenderer.send('login', { username: this.form.username, password: this.form.password })
+        ipcRenderer.send('login', { username: this.form.username, password: this.form.password, transferPort: this.$store.state.system.transferPort })
+        ipcRenderer.on('fileRequest', () => { this.$message.info('收到P2P传送请求') })
       },
       register () {
         ipcRenderer.once('registered', (event, packet) => {

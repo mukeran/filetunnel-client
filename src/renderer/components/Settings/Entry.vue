@@ -7,6 +7,7 @@
         v-model="_value"
         active-color="#13ce66"
         inactive-color="#ff4949"
+        :disabled="disabled"
       ></el-switch>
       <el-input
         v-else-if="type === 'text'"
@@ -14,6 +15,7 @@
         type="text"
         size="small"
         :style="{ width }"
+        :disabled="disabled"
       ></el-input>
       <el-input
         v-else-if="type === 'textarea'"
@@ -22,12 +24,14 @@
         resize="none"
         :rows="rows"
         :style="{ width }"
+        :disabled="disabled"
       ></el-input>
       <el-button
         v-else-if="type === 'button'"
         @click="e => $emit('click', e)"
         :type="buttonType"
         size="small"
+        :disabled="disabled"
       ><slot name="button-text"></slot></el-button>
       <el-input-number
         v-else-if="type === 'number'"
@@ -36,6 +40,7 @@
         :max="max"
         :controls="false"
         :style="{ width }"
+        :disabled="disabled"
       ></el-input-number>
     </div>
   </div>
@@ -66,7 +71,11 @@
       },
       value: [Object, String, Boolean, Number, Array],
       min: Number,
-      max: Number
+      max: Number,
+      disabled: {
+        type: Boolean,
+        default: false
+      }
     },
     computed: {
       _value: {

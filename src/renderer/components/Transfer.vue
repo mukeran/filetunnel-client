@@ -24,8 +24,8 @@
             <el-tag size="mini" type="danger" v-else-if="transfer.status === status.transfer.REJECTED">
               <i class="el-icon-error"></i>拒绝
             </el-tag>
-            <el-tag size="mini" type="success" v-if="transfer.mode === 0">在线中转</el-tag>
-            <el-tag size="mini" type="success" v-if="transfer.mode === 1">在线P2P</el-tag>
+            <el-tag size="mini" type="success" v-if="transfer.mode === 0">在线P2P</el-tag>
+            <el-tag size="mini" type="success" v-if="transfer.mode === 1">在线中转</el-tag>
             <el-tag size="mini" type="info" v-if="transfer.mode === 2">离线</el-tag>
             <br>
             <span style="font-size: 10px">SHA1: {{ transfer.sha1 }}</span><br>
@@ -116,25 +116,26 @@
       handleRequest: function ({ accept }) {
         let _id = this.transfer._id
         if (!accept) {
-          ipcRenderer.emit('fileRequest' + _id, { accept })
+          ipcRenderer.send('fileRequest' + _id, { accept })
           return
         }
         remote.dialog.showSaveDialog({
           title: '选择保存路径',
           defaultPath: this.transfer.filename
-        }).then(result => {
-          if (result.canceled) {
+        }, result => {
+          if (typeof result === 'undefined') {
             return
           }
-          this.$store.dispatch('updatePath', { filePath: result.filePath })
-          ipcRenderer.emit('fileRequest' + _id, { accept, filePath: result.filePath })
+          console.log(result)
+          this.$store.dispatch('updatePath', { filePath: result, _id })
+          ipcRenderer.send('fileRequest' + _id, { accept, filePath: result })
         })
       },
       removeTransfer: function () {
         this.$store.dispatch('removeTransfer', { _id: this.transfer._id })
       },
       cancelTransfer: function () {
-        ipcRenderer.emit('cancelTransfer' + this.transfer._id)
+        ipcRenderer.send('cancelTransfer' + this.transfer._id)
       },
       openFolder: function () {
         shell.openItem(dirname(this.transfer.filePath))

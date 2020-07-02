@@ -51,6 +51,7 @@
 
 <script>
   import { remote, ipcRenderer } from 'electron'
+import { mapState } from 'vuex'
   export default {
     name: 'NewTransfer',
     data () {
@@ -62,13 +63,23 @@
           filePath: '',
           size: '',
           sha1: ''
-        },
-        friends: [
-        ]
+        }
       }
     },
+    computed: {
+      ...mapState({
+        friends: state => state.friend.friends
+      })
+    },
     methods: {
+      requestFriendList () {
+        ipcRenderer.once('friendListRequested', (event, packet) => {
+          this.$store.dispatch('updateFriendList', { friends: packet.data.friends })
+        })
+        ipcRenderer.send('requestFriendList')
+      },
       selectFile () {
+        this.requestFriendList()
         remote.dialog.showOpenDialog({
           properties: ['openFile']
         }, filePath => {
@@ -80,7 +91,7 @@
               this.form.sha1 = '文件信息读取失败'
               return
             }
-            this.form.size = stats.size + ' 字节'
+            this.form.size = stats.size
             this.form.sha1 = '正在计算SHA1'
             ipcRenderer.on('hashCalculated', (event, { filePath, sha1 }) => {
               if (this.form.filePath === filePath) {
@@ -92,12 +103,29 @@
         })
       },
       newTransfer () {
-        // refresh friend list
-        // TODO getFriendIP
-        // TODO getUid
-        // if (this.form.mode === 0) {
-        // ipcRenderer.send('sendFile', { ip, port, myUid, targetUid, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
-        // }
+        if (this.form.sha1 === '') {
+          this.$message.error('Hash Calculating...')
+          return
+        }
+        let current
+        let friends = this.friends
+        for (let i = 0; i < friends.length; i++) {
+          if (friends[i]._id === this.form.target) {
+            current = friends[i]
+            break
+          }
+        }
+        console.log(current)
+        // TODO my.isNAT
+        if (current.isNAT) {
+          this.$message.error('目标在NAT内, 不能P2P传输')
+          return
+        }
+        if (this.form.mode === '0') {
+          ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
+          this.$message.success('发送成功')
+          this.$emit('transfer-sent')
+        }
       }
     }
   }

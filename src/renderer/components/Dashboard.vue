@@ -77,6 +77,7 @@
     computed: {
       ...mapState({
         connectionStatus: state => state.system.connectionStatus,
+        enableP2PTransfer: state => state.system.enableP2PTransfer,
         sessionId: state => state.user.sessionId
       })
     }

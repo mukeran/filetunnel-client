@@ -15,7 +15,7 @@ let buffer = Buffer.alloc(0) // Data buffer
  * @param {Buffer} data Data received
  */
 function processData (data) {
-  logger.debug(`Receiving data ${data}`)
+  // logger.debug(`Receiving data ${data}`) // RESTORE
   /* Concat to existed buffer */
   buffer = Buffer.concat([buffer, data])
   /* Find the end symbol of size (LF) */
@@ -54,7 +54,7 @@ function processData (data) {
     if (typeof callback !== 'undefined') {
       callback.del(packet.sq) // Delete callback when succeeded
       cb(packet) // Call callback
-      logger.info(`Received packet ${packet.sq} response`)
+      // logger.info(`Received packet ${packet.sq} response`) // RESTORE
     } else {
       /* If there's no recorded callback, it is timeout or fake */
       logger.info(`Received invalid packet ${packet.sq}`)
@@ -164,7 +164,7 @@ export function sendRequest (packet, timeout = config.connection.RESPONSE_TIMEOU
     const sq = callback.register(resolve)
     packet = { ...packet, sq }
     let payload = createPayload(packet)
-    logger.debug(`Sending payload ${payload}`)
+    // logger.debug(`Sending payload ${payload}`) // RESTORE
     /* Send payload */
     client.write(payload, () => setTimeout(() => {
       /* Report timeout when not receiving response after a specific timeout */

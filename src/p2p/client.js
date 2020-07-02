@@ -10,9 +10,8 @@ const { randomAESKey, randomNonce, decryptString, encryptString, cipherAlgorithm
 const { createGzip } = require('zlib')
 const { processData, packData } = require('./server')
 const { getPublicKey, getPrivateKey } = require('./key')
-const { Stream } = require('stream')
-const store = require('../renderer/store')
-const status = require('../client/status')
+const store = require('../renderer/store').default
+const status = require('../client/status').default
 
 export function getFileInfo (path) {
   return new Promise((resolve, reject) => {
@@ -25,7 +24,8 @@ export function getFileInfo (path) {
 }
 
 export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath) {
-  let _id = await store.dispatch('getId')
+  let _id = store.state.transfer._id
+  await store.dispatch('getId')
   let filename = basename(filePath)
   let transferTask = {
     _id,
@@ -83,7 +83,8 @@ export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath
 }
 
 export async function send (ip, port, uid, targetUid, deadline, filePath, size, sha1) {
-  let _id = await store.dispatch('getId')
+  let _id = store.state.transfer._id
+  await store.dispatch('getId')
   let filename = basename(filePath)
   let transferTask = {
     _id,
@@ -101,13 +102,18 @@ export async function send (ip, port, uid, targetUid, deadline, filePath, size, 
   store.dispatch('createTransfer', transferTask)
   let publicKey = await getPublicKey(targetUid)
   let privateKey = await getPrivateKey()
+  logger.debug('myPrivateKey: ' + privateKey)
+  logger.debug('targetPublicKey: ' + publicKey)
   let data = { userID: uid, deadline: deadline, nonce: randomNonce() }
 
   let key = Buffer.concat([randomAESKey(), randomBytes(16)])
   data.key = encryptKey(key, publicKey)
+  let info = { filename, size, sha1 }
+  data.fileInfo = encryptString(key.slice(0, 32), Buffer.from(JSON.stringify(info)))
 
   let sq = parseInt(randomBytes(4).toString('hex'), 16)
   let sig = signString(sq + '\n' + JSON.stringify(data), privateKey)
+  logger.debug('data to sign: ' + JSON.stringify(data))
   data.signature = sig
   let client = createConnection(port, ip)
   client.on('error', (err) => {
@@ -115,11 +121,12 @@ export async function send (ip, port, uid, targetUid, deadline, filePath, size, 
     logger.error(err)
     throw err
   })
+  logger.debug(data)
   let sData = packData(Buffer.from(JSON.stringify(data)), sq)
   data.sq = sq
   data.key = key
   data.path = filePath
-  data.fileInfo = { filename, size, sha1 }
+  data.fileInfo = info
   client.fData = data
   client._id = _id
   let buffer = Buffer.alloc(0)
@@ -138,7 +145,7 @@ export async function send (ip, port, uid, targetUid, deadline, filePath, size, 
   client.write(sData)
 }
 
-function onFileResponse (data, socket) {
+async function onFileResponse (data, socket) {
   if (!data.isAccepted) {
     logger.warn('transfer rejected..')
     store.dispatch('rejectTransfer', { _id: socket._id })
@@ -162,11 +169,18 @@ function onFileResponse (data, socket) {
   let gzip = createGzip()
   logger.info('transfer started.')
   store.dispatch('startTransfer', { _id: socket._id })
-  Stream.pipeline([readStream, gzip, cipher, socket], () => {
+  // stream.pipeline([readStream, gzip, cipher, socket], () => {
+  //   logger.info('data transfer finished.')
+  //   store.dispatch('finishTransfer', { _id: socket._id })
+  // })
+  readStream.pipe(gzip)
+    .pipe(cipher)
+    .pipe(socket)
+  socket.on('finish', () => {
     logger.info('data transfer finished.')
     store.dispatch('finishTransfer', { _id: socket._id })
   })
-  readStream.on('data', getProgresser(data.fileInfo.size, (e, speedData) => {
+  readStream.on('data', getProgresser(socket.fData.fileInfo.size, (e, speedData) => {
     store.dispatch('updateSpeed', { _id: socket._id, speedData })
   }))
 }

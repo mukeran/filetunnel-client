@@ -50,36 +50,30 @@ const mutations = {
     }
   },
   updateSpeed (state, { _id, speedData }) {
-    let current
     for (let i = 0; i < state.transfers.length; i++) {
       if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.TRANSFERRING
-        current.startTime = new Date().toISOString()
-        current.progress = Math.floor(100 * speedData.transferred / speedData.total)
-        current.speed = speedData.speed
-        current.speed = 0
+        // state.transfers[i].status = status.transfer.TRANSFERRING
+        state.transfers[i].progress = Math.floor(100 * speedData.transferred / speedData.total)
+        state.transfers[i].speed = speedData.speed
         break
       }
     }
   },
-  updatePath (state, { _id, savePath }) {
+  updatePath (state, { _id, filePath }) {
     let current
     for (let i = 0; i < state.transfers.length; i++) {
       if (state.transfers[i]._id === _id) {
         current = state.transfers[i]
-        current.filePath = savePath
+        current.filePath = filePath
         break
       }
     }
   },
   finishTransfer (state, { _id }) {
-    let current
     for (let i = 0; i < state.transfers.length; i++) {
       if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.FINISHED
-        current.finishTime = new Date().toISOString()
+        state.transfers[i].status = status.transfer.FINISHED
+        state.transfers[i].finishTime = new Date().toISOString()
         break
       }
     }
