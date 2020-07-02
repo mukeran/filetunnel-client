@@ -7,7 +7,7 @@ export default {
   transfer: {
     REQUEST: 1,
     CONNECTING: 2,
-    DENIED: 3,
+    REJECTED: 3,
     TRANSFERRING: 4,
     FINISHED: 5,
     CANCELLED: 6,

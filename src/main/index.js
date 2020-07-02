@@ -3,6 +3,7 @@
 import { app, BrowserWindow, Menu } from 'electron'
 import { registerIpc } from './ipc'
 import { client } from '../client'
+import { server } from '../p2p/server'
 
 /**
  * Set `__static` path to static files in production
@@ -45,6 +46,9 @@ app.on('ready', () => {
 app.on('window-all-closed', async () => {
   if (client !== null) {
     await client.end()
+  }
+  if (server !== null) {
+    await server.close()
   }
   if (process.platform !== 'darwin') {
     app.quit()
