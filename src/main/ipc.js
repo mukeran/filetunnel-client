@@ -4,14 +4,34 @@
 import { ipcMain } from 'electron'
 import { connectServer, registerAliveTimeout } from '../client'
 import request from '../client/request'
+import { logger } from '../logger'
+import { send } from '../p2p/client'
+import { startServer } from '../p2p/server'
 
 const channels = {
   connectServer: () => connectServer(),
-  'login': (event, { username, password }) => request.login(username, password),
-  'register': (event, { username, password, email }) => {
-    request.register(username, password, email)
+  login: (event, { username, password }) => {
+    request.login(username, password)
+      .then((packet) => {
+        event.sender.send('loggedIn', packet)
+      })
+  },
+  register: (event, { username, password, publicKey }) => {
+    request.register(username, password, publicKey)
       .then((packet) => {
         event.sender.send('registered', packet)
+      })
+  },
+  changePassword: (event, { username, password, newPassword }) => {
+    request.changePassword(username, password, newPassword)
+      .then((packet) => {
+        event.sender.send('passwordChanged', packet)
+      })
+  },
+  logout: (event) => {
+    request.logout()
+      .then((packet) => {
+        event.sender.send('loggedOut', packet)
       })
   },
   requestFriendList: (event) => {
@@ -54,7 +74,19 @@ const channels = {
       })
   },
   'friendTransferRequest': (event, { userID }) => request.friendTransferRequest(userID)
-  // 'sendFriendRequests': () => request.sendFriendRequests()
+  generateKeyPair: (event) => {
+    const NodeRSA = require('node-rsa')
+    const key = new NodeRSA({ b: 2048 })
+    const publicKey = key.exportKey('pkcs1-public-pem')
+    const privateKey = key.exportKey('pkcs1-private-pem')
+    event.sender.send('keyPairGenerated', { publicKey, privateKey })
+  },
+  startTransferServer: () => { startServer().catch((err) => { logger.error(err) }) },
+  sendFile: (event, { ip, port, myUid, targetUid, deadline, filePath, size, sha1 }) => {
+    send(ip, port, myUid, targetUid, deadline, filePath, size, sha1).catch(err => {
+      logger.error(err)
+    })
+  }
 }
 
 export function registerIpc () {

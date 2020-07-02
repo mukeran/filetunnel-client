@@ -92,6 +92,12 @@
         })
       },
       newTransfer () {
+        // refresh friend list
+        // TODO getFriendIP
+        // TODO getUid
+        // if (this.form.mode === 0) {
+        // ipcRenderer.send('sendFile', { ip, port, myUid, targetUid, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
+        // }
       }
     }
   }

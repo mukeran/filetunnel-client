@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Entry type="button" button-type="primary" @click="isModifyPasswordDialogVisible = true">
+    <Entry type="button" button-type="primary" @click="isModifyPasswordDialogVisible = true" @password-changed="isModifyPasswordDialogVisible = false">
       <template slot="description">修改密码</template>
       <template slot="button-text">修改</template>
     </Entry>
