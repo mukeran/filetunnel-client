@@ -3,7 +3,16 @@
  */
 export default {
   OK: 0,
-  FAILED: -1,
+  UNKNOWN_ERROR: -1,
+  ACCESS_DENIED: -2,
+  session: {
+    NO_SUCH_SESSION: 1
+  },
+  user: {
+    DUPLICATED_USERNAME: 1,
+    WRONG_USERNAME_OR_PASSWORD: 2,
+    NO_SUCH_USER: 3
+  },
   transfer: {
     REQUEST: 1,
     CONNECTING: 2,

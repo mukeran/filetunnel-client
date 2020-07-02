@@ -8,12 +8,13 @@
     <el-form-item label="用户名">
       <el-input type="text" v-model="form.username"></el-input>
     </el-form-item>
-    <el-button type="primary" @click="addFriend(form.username)">添加好友</el-button>
+    <el-button type="primary" @click="addFriend">添加好友</el-button>
   </el-form>
 </template>
 
 <script>
 import { ipcRenderer } from 'electron'
+import status from '../../client/status'
 export default {
   name: 'AddFriend',
   data () {
@@ -24,12 +25,18 @@ export default {
     }
   },
   methods: {
-    async addFriend (username) {
-      ipcRenderer.once('requestSended', (event, packet) => {
-        this.requestFriendList()
+    addFriend () {
+      ipcRenderer.once('friendRequestSent', (event, packet) => {
+        if (packet.status === status.OK) {
+          this.$message.success('请求发送成功，请等待回应')
+          this.$emit('request-sent')
+        } else if (packet.status === status.user.NO_SUCH_USER) {
+          this.$message.error('没有此用户')
+        } else {
+          this.$message.error('请求发送失败')
+        }
       })
-      await console.log('add username: ' + username)
-      ipcRenderer.send('sendFriendRequest', { username })
+      ipcRenderer.send('sendFriendRequest', { username: this.form.username })
     }
   }
 }

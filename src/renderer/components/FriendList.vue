@@ -56,7 +56,7 @@
       title="添加好友"
       :visible.sync="isAddFriendDialogVisible"
     >
-      <AddFriend/>
+      <AddFriend @request-sent="isAddFriendDialogVisible = false"/>
     </el-dialog>
     <el-dialog
       title="发送文件"
@@ -85,10 +85,7 @@
     data () {
       return {
         isNewTransferDialogVisible: false,
-        isAddFriendDialogVisible: false,
-        // for test
-        sessionId: '1212',
-        connectionStatus: status.connection.CONNECTED
+        isAddFriendDialogVisible: false
       }
     },
     methods: {
@@ -98,13 +95,15 @@
         })
         ipcRenderer.send('requestFriendList')
       },
-      deleteFriend (userID) {
-        console.log('ID: ' + userID)
-        ipcRenderer.once('deleteFinished', (event, packet) => {
-          console.log('deleted')
-          this.requestFriendList()
+      deleteFriend (userId) {
+        ipcRenderer.once('friendDeleted', (event, packet) => {
+          if (packet.status !== status.OK) {
+            this.$message.error(`删除好友 ${userId} 失败`)
+          } else {
+            this.requestFriendList()
+          }
         })
-        ipcRenderer.send('deleteFriend', { userID })
+        ipcRenderer.send('deleteFriend', { userId })
       }
     },
     watch: {
@@ -116,9 +115,9 @@
     },
     computed: {
       ...mapState({
-        // sessionId: state => state.user.sessionId,
-        // connectionStatus: state => state.system.connectionStatus,
-        friends: state => state.friend.friendlist
+        sessionId: state => state.user.sessionId,
+        connectionStatus: state => state.system.connectionStatus,
+        friends: state => state.friend.friends
       })
     }
   }

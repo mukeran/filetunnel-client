@@ -37,19 +37,20 @@ export default {
     modifyPassword () {
       ipcRenderer.once('passwordChanged', (event, packet) => {
         if (packet.status === status.OK) {
-          alert('Password changed')
-          // 发出一个事件，更改密码界面不可见
-          this.$emit('password-changed')
+          this.$message.success('密码修改成功')
+          this.$emit('password-modified')
         } else {
-          alert('Failed to change password')
+          this.$message.error('密码修改失败')
         }
       })
       if (this.form.newPassword === this.form.repeatNewPassword) {
-        console.log('sending packet')
-        ipcRenderer.send('changePassword', {username: this._id, password: this.form.oldPassword, newPassword: this.form.newPassword})
-        // console.log(this.username + '  9999   ' + this._id)
+        ipcRenderer.send('changePassword', {
+          username: this._id,
+          password: this.form.oldPassword,
+          newPassword: this.form.newPassword
+        })
       } else {
-        alert('两次密码不一致')
+        this.$message.error('两次密码输入不一致')
       }
     }
   },

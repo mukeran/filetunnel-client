@@ -7,6 +7,8 @@ import request from '../client/request'
 import { logger } from '../logger'
 import { send } from '../p2p/client'
 import { startServer } from '../p2p/server'
+import store from '../renderer/store'
+import status from '../client/status'
 
 const channels = {
   connectServer: () => connectServer(),
@@ -34,6 +36,20 @@ const channels = {
         event.sender.send('loggedOut', packet)
       })
   },
+  resumeSession: (event) => {
+    request.resumeSession(store.state.user.sessionId)
+      .then(packet => {
+        if (packet.status !== status.OK) {
+          store.dispatch('updateUserInfo', {
+            _id: null,
+            username: null,
+            sessionId: null
+          })
+        } else {
+          event.sender.send('sessionResumed')
+        }
+      })
+  },
   requestFriendList: (event) => {
     request.requestFriendList()
       .then((packet) => {
@@ -54,26 +70,24 @@ const channels = {
     })
   },
   registerAliveTimeout: () => registerAliveTimeout(),
-  sendFriendRequest: (event, {username}) => {
+  sendFriendRequest: (event, { username }) => {
     request.sendFriendRequest(username)
-      .then((packet) => {
-        event.sender.send('requestSended')
+      .then(packet => {
+        event.sender.send('friendRequestSent', packet)
       })
   },
-
-  deleteFriend: (event, {userID}) => {
-    request.deleteFriend(userID)
-      .then((packet) => {
-        event.sender.send('deleteFinished', packet)
+  deleteFriend: (event, { userId }) => {
+    request.deleteFriend(userId)
+      .then(packet => {
+        event.sender.send('friendDeleted', packet)
       })
   },
   answerFriendRequest: (event, {_id, operation}) => {
     request.answerFriendRequest(_id, operation)
-      .then((packet) => {
-        event.sender.send('requestAnswered')
+      .then(packet => {
+        event.sender.send('friendRequestAnswered', packet)
       })
   },
-  'friendTransferRequest': (event, { userID }) => request.friendTransferRequest(userID)
   generateKeyPair: (event) => {
     const NodeRSA = require('node-rsa')
     const key = new NodeRSA({ b: 2048 })

@@ -1,6 +1,6 @@
 import alive from './alive'
 import user from './user'
-import friends from './friends'
+import friends from './friend'
 
 export default {
   alive,

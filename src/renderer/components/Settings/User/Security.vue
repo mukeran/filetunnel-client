@@ -12,7 +12,7 @@
       title="修改密码"
       :visible.sync="isModifyPasswordDialogVisible"
     >
-     <ModifyPassword/>
+     <ModifyPassword @password-modified="isModifyPasswordDialogVisible = false"/>
     </el-dialog>
     <el-dialog
       title="修改公钥"

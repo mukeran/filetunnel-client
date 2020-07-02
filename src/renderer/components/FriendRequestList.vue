@@ -13,6 +13,7 @@
 <script>
   import { mapState } from 'vuex'
 import { ipcRenderer } from 'electron'
+  import status from '../../client/status'
   export default {
     name: 'FriendRequestList',
     props: {
@@ -21,42 +22,18 @@ import { ipcRenderer } from 'electron'
         default: '100px'
       }
     },
-    data () {
-      return {
-        // friendRequests: [
-        //   {
-        //     _id: '123',
-        //     fromUserId: '123123',
-        //     fromUsername: '123'
-        //   },
-        //   {
-        //     _id: '124',
-        //     fromUserId: '123123',
-        //     fromUsername: '123'
-        //   }
-        // ]
-      }
-    },
     methods: {
       answer (operation, _id) {
-        ipcRenderer.once('requestAnswered', (event, packet) => {
-          console.log('Answered')
-          this.requestFriendList()
+        ipcRenderer.once('friendRequestAnswered', (event, packet) => {
+          if (packet.status === status.OK) {
+            this.$store.dispatch('removeFriendRequest', _id)
+          }
         })
         ipcRenderer.send('answerFriendRequest', { _id, operation })
       }
     },
-    watch: {
-      sessionId (to) {
-        if (to !== null && this.connectionStatus === status.connection.CONNECTED) {
-          this.requestFriendList()
-        }
-      }
-    },
     computed: {
       ...mapState({
-        // sessionId: state => state.user.sessionId,
-        // connectionStatus: state => state.system.connectionStatus,
         friendRequests: state => state.friend.friendRequests
       })
     }

@@ -94,16 +94,17 @@
             this.$store.dispatch('updateUserInfo', {
               _id: packet.data._id,
               username: packet.data.username,
-              sessionId: packet.data.sessionId,
-              publicKey: packet.data.publicKey
+              sessionId: packet.data.sessionId
             })
             this.$store.dispatch('updatePrivateKeyPath', {
               privateKeyPath: this.form.privateKeyPath
             })
             this.$emit('logged-in')
-            alert('logged in, your publicKey is :\n' + packet.data.publicKey)
-          } else if (packet.status === status.FAILED) {
-            this.$message.error('登录失败')
+            this.$message.success(`${packet.data.username} 欢迎登录`)
+          } else if (packet.status === status.user.WRONG_USERNAME_OR_PASSWORD) {
+            this.$message.error('用户名或密码错误')
+          } else {
+            this.$message.error('未知错误')
           }
         })
         ipcRenderer.send('login', { username: this.form.username, password: this.form.password })
@@ -111,10 +112,12 @@
       register () {
         ipcRenderer.once('registered', (event, packet) => {
           if (packet.status === status.OK) {
-            alert('注册成功')
+            this.$message.success('注册成功')
+            this.isLoginMode = true
+          } else if (packet.status === status.user.DUPLICATED_USERNAME) {
+            this.$message.error('用户名已经被使用')
           } else {
-            console.log(packet)
-            alert('注册失败')
+            this.$message.error('注册失败')
           }
         })
         if (this.form.publicKey === '') {
@@ -128,13 +131,14 @@
             return
           }
           this.$message.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
-          // 执行 register 操作
           if (this.form.password === this.form.repeatPassword) {
-            console.log('77777------------------sending datapacket------------------7777777777777777')
-            ipcRenderer.send('register', {username: this.form.username, password: this.form.password, publicKey: this.form.publicKey})
-            // console.log('444----------4444\n'+packet)
+            ipcRenderer.send('register', {
+              username: this.form.username,
+              password: this.form.password,
+              publicKey: this.form.publicKey
+            })
           } else {
-            alert('两次密码不一致')
+            this.$message.error('两次密码不一致')
           }
         })
       },

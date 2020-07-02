@@ -17,7 +17,7 @@ import { mapState } from 'vuex'
     },
     computed: {
       ...mapState({
-        transfers: state => state.transfers.transfers
+        transfers: state => state.transfer.transfers
       })
     }
   }
