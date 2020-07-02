@@ -50,9 +50,8 @@
             this.$route.name !== 'FriendList' && this.$router.push({ name: 'FriendList' })
           })
           ipcRenderer.send('resumeSession')
-        } else {
-          ipcRenderer.send('registerAliveTimeout')
         }
+        ipcRenderer.send('registerAliveTimeout')
       }
     },
     watch: {

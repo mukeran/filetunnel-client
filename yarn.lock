@@ -618,7 +618,7 @@ asn1.js@^4.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-asn1@~0.2.3:
+asn1@^0.2.4, asn1@~0.2.3:
   version "0.2.4"
   resolved "https://registry.npm.taobao.org/asn1/download/asn1-0.2.4.tgz#8d2475dfab553bb33e77b54e59e880bb8ce23136"
   integrity sha1-jSR136tVO7M+d7VOWeiAu4ziMTY=
@@ -6299,6 +6299,13 @@ node-loader@^0.6.0:
   resolved "https://registry.npm.taobao.org/node-loader/download/node-loader-0.6.0.tgz#c797ef51095ed5859902b157f6384f6361e05ae8"
   integrity sha1-x5fvUQle1YWZArFX9jhPY2HgWug=
 
+node-rsa@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.npm.taobao.org/node-rsa/download/node-rsa-1.0.8.tgz#29a4517380f3272cd2073ff4d4c1ca44127ea4ad"
+  integrity sha1-KaRRc4DzJyzSBz/01MHKRBJ+pK0=
+  dependencies:
+    asn1 "^0.2.4"
+
 node-sass@^4.9.2:
   version "4.14.1"
   resolved "https://registry.npm.taobao.org/node-sass/download/node-sass-4.14.1.tgz#99c87ec2efb7047ed638fb4c9db7f3a42e2217b5"
@@ -9177,11 +9184,6 @@ vm-browserify@^1.0.1:
   version "1.1.2"
   resolved "https://registry.npm.taobao.org/vm-browserify/download/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha1-eGQcSIuObKkadfUR56OzKobl3aA=
-
-vue-affix@^0.5.2:
-  version "0.5.2"
-  resolved "https://registry.npm.taobao.org/vue-affix/download/vue-affix-0.5.2.tgz#1f22f36262e3b867788adb00ae5bc3c3d12ea64b"
-  integrity sha1-HyLzYmLjuGd4itsArlvDw9Eupks=
 
 vue-electron@^1.0.6:
   version "1.0.6"

@@ -6,7 +6,7 @@
       </span>
       <el-form
         :model="form"
-        label-width="80px"
+        label-width="100px"
         size="medium"
       >
         <el-form-item label="用户名">
@@ -15,8 +15,29 @@
         <el-form-item label="密码">
           <el-input type="password" v-model="form.password" @keyup.enter.native="isLoginMode ? login() : register()"></el-input>
         </el-form-item>
+        <el-form-item v-if="isLoginMode" label="私钥路径">
+          <el-input type="text" v-model="form.privateKeyPath" disabled>
+            <template slot="append">
+              <el-button @click="selectPrivateKeyPath">选择路径</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
         <el-form-item v-if="!isLoginMode" label="重复密码">
           <el-input type="password" v-model="form.repeatPassword" @keyup.enter.native="register"></el-input>
+        </el-form-item>
+        <el-form-item v-if="!isLoginMode" label="公钥">
+          <el-input type="text" v-model="form.publicKey" disabled>
+            <template slot="append">
+              <el-button @click="generateKeyPair">生成</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item v-if="!isLoginMode" label="私钥保存路径">
+          <el-input type="text" v-model="form.privateKeySavePath" disabled>
+            <template slot="append">
+              <el-button @click="selectPrivateKeySavePath">选择路径</el-button>
+            </template>
+          </el-input>
         </el-form-item>
         <template v-if="isLoginMode">
           <el-button type="primary" @click="login">登录</el-button>
@@ -31,7 +52,7 @@
 </template>
 
 <script>
-  import { ipcRenderer } from 'electron'
+  import { ipcRenderer, remote } from 'electron'
   import status from '../../client/status'
   export default {
     name: 'Login',
@@ -48,13 +69,20 @@
         return ['login', 'register'].indexOf(value) !== -1
       }
     },
+    mounted () {
+      this.form.privateKeyPath = this.form.privateKeySavePath = remote.app.getPath('userData') + '/privateKey.pem'
+    },
     data () {
       return {
         isLoginMode: true,
         form: {
           username: '',
           password: '',
-          repeatPassword: ''
+          repeatPassword: '',
+          publicKey: '',
+          privateKey: '',
+          privateKeyPath: '',
+          privateKeySavePath: ''
         }
       }
     },
@@ -67,6 +95,9 @@
               username: packet.data.username,
               sessionId: packet.data.sessionId
             })
+            this.$store.dispatch('updatePrivateKeyPath', {
+              privateKeyPath: this.form.privateKeyPath
+            })
             this.$emit('logged-in')
           } else if (packet.status === status.FAILED) {
             this.$message.error('登录失败')
@@ -75,7 +106,46 @@
         ipcRenderer.send('login', { username: this.form.username, password: this.form.password })
       },
       register () {
-        alert('register')
+        if (this.form.publicKey === '') {
+          this.$message.error('请先生成公私钥对')
+          return
+        }
+        const fs = remote.require('fs')
+        fs.writeFile(this.form.privateKeySavePath, this.form.privateKey, (err) => {
+          if (err) {
+            this.$message.error('私钥保存失败')
+            return
+          }
+          this.$message.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
+          // 执行 register 操作
+        })
+      },
+      generateKeyPair () {
+        ipcRenderer.once('keyPairGenerated', (event, { publicKey, privateKey }) => {
+          this.form.publicKey = publicKey
+          this.form.privateKey = privateKey
+        })
+        this.form.publicKey = '正在生成...可能会卡顿'
+        ipcRenderer.send('generateKeyPair')
+      },
+      selectPrivateKeySavePath () {
+        remote.dialog.showSaveDialog({
+          defaultPath: this.form.privateKeySavePath
+        }, savePath => {
+          if (typeof savePath !== 'undefined') {
+            this.form.privateKeySavePath = savePath
+          }
+        })
+      },
+      selectPrivateKeyPath () {
+        remote.dialog.showOpenDialog({
+          properties: ['openFile'],
+          defaultPath: this.form.privateKeyPath
+        }, path => {
+          if (typeof path[0] !== 'undefined') {
+            this.form.privateKeyPath = path[0]
+          }
+        })
       }
     }
   }

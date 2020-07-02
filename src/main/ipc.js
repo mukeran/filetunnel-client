@@ -36,7 +36,14 @@ const channels = {
       event.sender.send('hashCalculated', { filePath, sha1: hash.digest('hex') })
     })
   },
-  registerAliveTimeout: () => registerAliveTimeout()
+  registerAliveTimeout: () => registerAliveTimeout(),
+  generateKeyPair: (event) => {
+    const NodeRSA = require('node-rsa')
+    const key = new NodeRSA({ b: 2048 })
+    const publicKey = key.exportKey('pkcs1-public-pem')
+    const privateKey = key.exportKey('pkcs1-private-pem')
+    event.sender.send('keyPairGenerated', { publicKey, privateKey })
+  }
 }
 
 export function registerIpc () {
