@@ -54,6 +54,7 @@
 <script>
   import { ipcRenderer, remote } from 'electron'
   import status from '../../client/status'
+  import { mapState } from 'vuex'
   export default {
     name: 'Login',
     props: {
@@ -93,12 +94,14 @@
             this.$store.dispatch('updateUserInfo', {
               _id: packet.data._id,
               username: packet.data.username,
-              sessionId: packet.data.sessionId
+              sessionId: packet.data.sessionId,
+              publicKey: packet.data.publicKey
             })
             this.$store.dispatch('updatePrivateKeyPath', {
               privateKeyPath: this.form.privateKeyPath
             })
             this.$emit('logged-in')
+            alert('logged in, your publicKey is :\n' + packet.data.publicKey)
           } else if (packet.status === status.FAILED) {
             this.$message.error('登录失败')
           }
@@ -106,6 +109,14 @@
         ipcRenderer.send('login', { username: this.form.username, password: this.form.password })
       },
       register () {
+        ipcRenderer.once('registered', (event, packet) => {
+          if (packet.status === status.OK) {
+            alert('注册成功')
+          } else {
+            console.log(packet)
+            alert('注册失败')
+          }
+        })
         if (this.form.publicKey === '') {
           this.$message.error('请先生成公私钥对')
           return
@@ -118,6 +129,13 @@
           }
           this.$message.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
           // 执行 register 操作
+          if (this.form.password === this.form.repeatPassword) {
+            console.log('77777------------------sending datapacket------------------7777777777777777')
+            ipcRenderer.send('register', {username: this.form.username, password: this.form.password, publicKey: this.form.publicKey})
+            // console.log('444----------4444\n'+packet)
+          } else {
+            alert('两次密码不一致')
+          }
         })
       },
       generateKeyPair () {
@@ -147,6 +165,13 @@
           }
         })
       }
+    },
+    computed: {
+      ...mapState({
+        _id: state => state.user._id,
+        username: state => state.user.username,
+        publicKey: state => state.publicKey
+      })
     }
   }
 </script>
