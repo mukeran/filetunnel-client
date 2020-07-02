@@ -1,16 +1,23 @@
 const state = {
-  list: []
+  friendlist: [],
+  friendRequests: []
 }
 
 const mutations = {
   updateFriendList (state, { friends }) {
-    state.list = friends
+    state.friendlist = friends
+  },
+  updateFriendRequests (state, { friendRequests }) {
+    state.friendRequests = friendRequests
   }
 }
 
 const actions = {
   updateFriendList ({ commit }, { friends }) {
     commit('updateFriendList', { friends })
+  },
+  updateFriendRequests ({ commit }, { friendRequests }) {
+    commit('updateFriendRequests', { friendRequests })
   }
 }
 

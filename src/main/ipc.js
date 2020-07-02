@@ -7,13 +7,8 @@ import request from '../client/request'
 
 const channels = {
   connectServer: () => connectServer(),
-  login: (event, { username, password }) => {
-    request.login(username, password)
-      .then((packet) => {
-        event.sender.send('loggedIn', packet)
-      })
-  },
-  register: (event, { username, password, email }) => {
+  'login': (event, { username, password }) => request.login(username, password),
+  'register': (event, { username, password, email }) => {
     request.register(username, password, email)
       .then((packet) => {
         event.sender.send('registered', packet)
@@ -21,7 +16,9 @@ const channels = {
   },
   requestFriendList: (event) => {
     request.requestFriendList()
-    event.sender.send('friendListRequested')
+      .then((packet) => {
+        event.sender.send('friendListRequested', packet)
+      })
   },
   calculateHash: (event, { filePath }) => {
     const fs = require('fs')
@@ -36,7 +33,28 @@ const channels = {
       event.sender.send('hashCalculated', { filePath, sha1: hash.digest('hex') })
     })
   },
-  registerAliveTimeout: () => registerAliveTimeout()
+  registerAliveTimeout: () => registerAliveTimeout(),
+  sendFriendRequest: (event, {username}) => {
+    request.sendFriendRequest(username)
+      .then((packet) => {
+        event.sender.send('requestSended')
+      })
+  },
+
+  deleteFriend: (event, {userID}) => {
+    request.deleteFriend(userID)
+      .then((packet) => {
+        event.sender.send('deleteFinished', packet)
+      })
+  },
+  answerFriendRequest: (event, {_id, operation}) => {
+    request.answerFriendRequest(_id, operation)
+      .then((packet) => {
+        event.sender.send('requestAnswered')
+      })
+  },
+  'friendTransferRequest': (event, { userID }) => request.friendTransferRequest(userID)
+  // 'sendFriendRequests': () => request.sendFriendRequests()
 }
 
 export function registerIpc () {

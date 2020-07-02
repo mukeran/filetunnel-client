@@ -48,7 +48,7 @@
             size="mini"
             @click="isNewTransferDialogVisible = true"
           ><i class="el-icon-s-promotion"></i>发送</el-button>
-          <el-button type="danger" size="mini"><i class="el-icon-delete-solid"></i>删除</el-button>
+          <el-button type="danger" size="mini" @click="deleteFriend(scope.row._id)"><i class="el-icon-delete-solid" ></i>删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -85,7 +85,10 @@
     data () {
       return {
         isNewTransferDialogVisible: false,
-        isAddFriendDialogVisible: false
+        isAddFriendDialogVisible: false,
+        // for test
+        sessionId: '1212',
+        connectionStatus: status.connection.CONNECTED
       }
     },
     methods: {
@@ -94,6 +97,14 @@
           this.$store.dispatch('updateFriendList', { friends: packet.data.friends })
         })
         ipcRenderer.send('requestFriendList')
+      },
+      deleteFriend (userID) {
+        console.log('ID: ' + userID)
+        ipcRenderer.once('deleteFinished', (event, packet) => {
+          console.log('deleted')
+          this.requestFriendList()
+        })
+        ipcRenderer.send('deleteFriend', { userID })
       }
     },
     watch: {
@@ -105,14 +116,13 @@
     },
     computed: {
       ...mapState({
-        sessionId: state => state.user.sessionId,
-        connectionStatus: state => state.system.connectionStatus,
-        friends: state => state.friend.list
+        // sessionId: state => state.user.sessionId,
+        // connectionStatus: state => state.system.connectionStatus,
+        friends: state => state.friend.friendlist
       })
     }
   }
 </script>
 
 <style scoped>
-
 </style>
