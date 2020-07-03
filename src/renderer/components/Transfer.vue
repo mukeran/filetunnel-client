@@ -4,7 +4,10 @@
       <el-col :span="9" style="height: 100%">
         <div class="transfer-control" style="width: 100%">
           <div style="width: 100%">
-            <span style="font-size: 20px">{{ transfer.filename }}</span><br>
+            <el-tooltip effect="dark" :content="transfer.filename" placement="top">
+              <span class="filename">{{ transfer.filename }}</span>
+            </el-tooltip>
+            <br>
             <span style="font-size: 12px">{{ getReadableFileSizeString(transfer.size) }}</span>
             <el-tag size="mini" type="primary" v-if="transfer.status === status.transfer.REQUEST">
               <i class="el-icon-question"></i>请求
@@ -104,7 +107,6 @@
 <script>
   import status from '../../client/status'
   import { ipcRenderer, shell, remote } from 'electron'
-  import { dirname } from 'path'
 
   export default {
     name: 'Transfer',
@@ -152,7 +154,7 @@
         ipcRenderer.send('cancelTransfer' + this.transfer._id)
       },
       openFolder: function () {
-        shell.openItem(dirname(this.transfer.filePath))
+        shell.openItem(remote.require('path').dirname(this.transfer.filePath))
       }
     }
   }
@@ -165,11 +167,18 @@
     justify-content: space-around;
     align-items: center;
   }
-
   .transfer .transfer-control {
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  .transfer .filename {
+    font-size: 20px;
+    display: inline-block;
+    width: 200%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 </style>

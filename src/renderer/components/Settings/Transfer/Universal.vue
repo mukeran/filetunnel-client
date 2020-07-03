@@ -13,7 +13,7 @@
       <template slot="description">是否接受 P2P 传输</template>
     </Entry>
     <Entry type="number" v-model="transferPort" width="100px" :min="1" :max="65535" disabled>
-      <template slot="description">传输端口<br>（1~65535，推荐使用高位端口）</template>
+      <template slot="description">传输端口<br>（1~65535，由系统自动分配）</template>
     </Entry>
   </div>
 </template>

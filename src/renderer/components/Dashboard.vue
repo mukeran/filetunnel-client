@@ -46,8 +46,10 @@
     methods: {
       resumeSession () {
         if (this.sessionId !== null) {
+          this.$message.info('正在尝试恢复会话...')
           ipcRenderer.once('sessionResumed', () => {
-            this.$route.name !== 'FriendList' && this.$router.push({ name: 'FriendList' })
+            this.$message.success('会话已恢复')
+            this.refreshFriendList()
           })
           ipcRenderer.send('resumeSession')
         }

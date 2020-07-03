@@ -122,7 +122,7 @@ export async function send (ip, port, uid, targetUid, deadline, filePath, size, 
     throw err
   })
   logger.debug(data)
-  let sData = packData(Buffer.from(JSON.stringify(data)), sq)
+  const sData = packData(Buffer.from(JSON.stringify(data)), sq)
   data.sq = sq
   data.key = key
   data.path = filePath
@@ -134,6 +134,7 @@ export async function send (ip, port, uid, targetUid, deadline, filePath, size, 
   client.on('data', (data) => processData(data, state, onFileResponse))
 
   ipcMain.once('cancelTransfer' + _id, (event) => {
+    store.dispatch('cancelTransfer', { _id })
     client.end()
   })
   client.on('end', () => {

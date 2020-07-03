@@ -6,7 +6,7 @@
     style="text-align: center"
   >
     <el-form-item label="用户名">
-      <el-input type="text" v-model="form.username"></el-input>
+      <el-input type="text" v-model="form.username" @keyup.enter.native="addFriend"></el-input>
     </el-form-item>
     <el-button type="primary" @click="addFriend">添加好友</el-button>
   </el-form>
@@ -26,6 +26,10 @@ export default {
   },
   methods: {
     addFriend () {
+      if (this.form.username === '') {
+        this.$message.error('请输入用户名')
+        return
+      }
       ipcRenderer.once('friendRequestSent', (event, packet) => {
         if (packet.status === status.OK) {
           this.$message.success('请求发送成功，请等待回应')
