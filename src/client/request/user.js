@@ -8,6 +8,7 @@ export default {
     action: 'changePassword',
     data: { password, newPassword }
   }),
+  changePublicKey: (publicKey) => sendRequest({ action: 'changePublicKey', data: { publicKey } }),
   resumeSession: (sessionId, transferPort) => sendRequest({ action: 'resumeSession', data: { sessionId, transferPort } }),
   requestPublicKey: userId => sendRequest({ action: 'requestPublicKey', data: { userId } })
 }

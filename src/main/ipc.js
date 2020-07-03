@@ -30,6 +30,12 @@ const channels = {
         event.sender.send('passwordChanged', packet)
       })
   },
+  changePublicKey: (event, {publicKey}) => {
+    request.changePublicKey(publicKey)
+      .then((packet) => {
+        event.sender.send('publicKeyChanged', packet)
+      })
+  },
   logout: (event) => {
     request.logout()
       .then((packet) => {

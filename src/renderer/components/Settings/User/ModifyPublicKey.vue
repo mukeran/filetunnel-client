@@ -33,7 +33,7 @@
 
 <script>
   import { ipcRenderer, remote } from 'electron'
-
+  import status from '../../../../client/status'
   export default {
     name: 'ModifyPublicKey',
     data () {
@@ -67,6 +67,17 @@
         })
       },
       modifyPublicKey () {
+        ipcRenderer.once('publicKeyChanged', (event, packet) => {
+          if (packet.status === status.OK) {
+            this.$message.success('公钥修改成功')
+            this.$emit('publicKey-modified')
+          } else {
+            this.$message.error('公钥修改失败')
+          }
+        })
+        ipcRenderer.send('changePublicKey', {
+          publicKey: this.form.publicKey
+        })
       }
     }
   }

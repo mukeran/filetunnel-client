@@ -14,6 +14,7 @@
       type="button"
       button-type="primary"
       @click="isModifyPublicKeyDialogVisible = true"
+      @publicKey-modified="isModifyPublicKeyDialogVisible = false"
       :disabled="sessionId === null || connectionStatus !== status.connection.CONNECTED"
     >
       <template slot="description">生成新的公私钥对</template>
