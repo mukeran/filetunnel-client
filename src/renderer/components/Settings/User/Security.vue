@@ -30,7 +30,7 @@
       title="生成新的公私钥对"
       :visible.sync="isModifyPublicKeyDialogVisible"
     >
-      <ModifyPublicKey/>
+      <ModifyPublicKey @public-key-modified="isModifyPublicKeyDialogVisible = false"/>
     </el-dialog>
   </div>
 </template>
