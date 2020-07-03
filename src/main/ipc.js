@@ -36,6 +36,9 @@ const channels = {
         event.sender.send('loggedOut', packet)
       })
   },
+  /**
+   * Resume session in case of disconnection
+   */
   resumeSession: (event) => {
     request.resumeSession(store.state.user.sessionId, store.state.system.transferPort)
       .then(packet => {
@@ -50,6 +53,9 @@ const channels = {
         }
       })
   },
+  /**
+   * Request friend list
+   */
   requestFriendList: (event) => {
     request.requestFriendList()
       .then((packet) => {
@@ -76,12 +82,18 @@ const channels = {
         event.sender.send('friendRequestSent', packet)
       })
   },
+  /**
+   * Delete friend by userId
+   */
   deleteFriend: (event, { userId }) => {
     request.deleteFriend(userId)
       .then(packet => {
         event.sender.send('friendDeleted', packet)
       })
   },
+  /**
+   * Answer friend request by _id and operation
+   */
   answerFriendRequest: (event, {_id, operation}) => {
     request.answerFriendRequest(_id, operation)
       .then(packet => {
