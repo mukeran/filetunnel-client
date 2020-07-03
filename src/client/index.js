@@ -79,7 +79,7 @@ let doStopAliveTimeout = false
 /**
  * Register alive timeout
  */
-export function registerAliveTimeout () {
+export function registerAliveTimeout (isFirst = false) {
   if (aliveTimeout !== null) {
     clearTimeout(aliveTimeout)
     aliveTimeout = null
@@ -101,7 +101,7 @@ export function registerAliveTimeout () {
         }
         await store.dispatch('updateConnectionStatus', { connectionStatus: status.connection.DISCONNECTED })
       })
-  }, config.connection.ALIVE_PERIOD)
+  }, isFirst ? 0 : config.connection.ALIVE_PERIOD)
 }
 
 /**

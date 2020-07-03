@@ -69,7 +69,7 @@ const channels = {
       event.sender.send('hashCalculated', { filePath, sha1: hash.digest('hex') })
     })
   },
-  registerAliveTimeout: () => registerAliveTimeout(),
+  registerAliveTimeout: () => registerAliveTimeout(true),
   sendFriendRequest: (event, { username }) => {
     request.sendFriendRequest(username)
       .then(packet => {
