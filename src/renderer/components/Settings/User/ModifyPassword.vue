@@ -21,7 +21,6 @@
 <script>
 import { ipcRenderer } from 'electron'
 import status from '../../../../client/status'
-import { mapState } from 'vuex'
 export default {
   name: 'ModifyPassword',
   data () {
@@ -45,7 +44,6 @@ export default {
       })
       if (this.form.newPassword === this.form.repeatNewPassword) {
         ipcRenderer.send('changePassword', {
-          username: this._id,
           password: this.form.oldPassword,
           newPassword: this.form.newPassword
         })
@@ -53,12 +51,6 @@ export default {
         this.$message.error('两次密码输入不一致')
       }
     }
-  },
-  computed: {
-    ...mapState({
-      _id: state => state.user._id,
-      username: state => state.user.username
-    })
   }
 }
 </script>

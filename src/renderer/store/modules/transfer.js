@@ -15,106 +15,105 @@ const mutations = {
     state.transfers.push(transferTask)
   },
   removeTransfer (state, { _id }) {
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        state.transfers.splice(i, 1)
-        break
-      }
-    }
+    state.transfers = state.transfers.filter(transfer => transfer._id !== _id)
   },
-  updateHash (state, { _id, sha1, size, filename }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.sha1 = sha1
-        current.size = size
-        if (current.isDownload) {
-          current.filename = filename
-        }
-        break
-      }
-    }
-  },
+  // updateHash (state, { _id, sha1, size, filename }) {
+  //   let current
+  //   for (let i = 0; i < state.transfers.length; i++) {
+  //     if (state.transfers[i]._id === _id) {
+  //       current = state.transfers[i]
+  //       current.sha1 = sha1
+  //       current.size = size
+  //       if (current.isDownload) {
+  //         current.filename = filename
+  //       }
+  //       break
+  //     }
+  //   }
+  // },
   startTransfer (state, { _id }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.TRANSFERRING
-        current.startTime = new Date().toISOString()
-        current.progress = 0
-        current.speed = 0
-        break
+    state.transfers = state.transfers.map(transfer => {
+      if (transfer._id === _id) {
+        return {
+          ...transfer,
+          status: status.transfer.TRANSFERRING,
+          startTime: new Date().toISOString(),
+          progress: 0,
+          speed: 0
+        }
       }
-    }
+      return transfer
+    })
   },
   updateSpeed (state, { _id, speedData }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.TRANSFERRING
-        current.startTime = new Date().toISOString()
-        current.progress = Math.floor(100 * speedData.transferred / speedData.total)
-        current.speed = speedData.speed
-        current.speed = 0
-        break
+    state.transfers = state.transfers.map(transfer => {
+      if (transfer._id === _id) {
+        return {
+          ...transfer,
+          progress: Math.floor(100 * speedData.transferred / speedData.total),
+          speed: speedData.speed
+        }
       }
-    }
+      return transfer
+    })
   },
-  updatePath (state, { _id, savePath }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.filePath = savePath
-        break
+  updatePath (state, { _id, filePath }) {
+    state.transfers = state.transfers.map(transfer => {
+      if (transfer._id === _id) {
+        return {
+          ...transfer,
+          filePath
+        }
       }
-    }
+      return transfer
+    })
   },
   finishTransfer (state, { _id }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.FINISHED
-        current.finishTime = new Date().toISOString()
-        break
+    state.transfers = state.transfers.map(transfer => {
+      if (transfer._id === _id && transfer.status === status.transfer.TRANSFERRING) {
+        return {
+          ...transfer,
+          status: status.transfer.FINISHED,
+          finishTime: new Date().toISOString()
+        }
       }
-    }
+      return transfer
+    })
   },
   failTransfer (state, { _id }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.FAILED
-        current.failedTime = new Date().toISOString()
-        break
+    state.transfers = state.transfers.map(transfer => {
+      if (transfer._id === _id && transfer.status === status.transfer.TRANSFERRING) {
+        return {
+          ...transfer,
+          status: status.transfer.FAILED,
+          failedTime: new Date().toISOString()
+        }
       }
-    }
+      return transfer
+    })
   },
   cancelTransfer (state, { _id }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.CANCELLED
-        current.failedTime = new Date().toISOString()
-        break
+    state.transfers = state.transfers.map(transfer => {
+      if (transfer._id === _id && transfer.status === status.transfer.TRANSFERRING) {
+        return {
+          ...transfer,
+          status: status.transfer.CANCELLED,
+          cancelTime: new Date().toISOString()
+        }
       }
-    }
+      return transfer
+    })
   },
   rejectTransfer (state, { _id }) {
-    let current
-    for (let i = 0; i < state.transfers.length; i++) {
-      if (state.transfers[i]._id === _id) {
-        current = state.transfers[i]
-        current.status = status.transfer.REJECTED
-        break
+    state.transfers = state.transfers.map(transfer => {
+      if (transfer._id === _id) {
+        return {
+          ...transfer,
+          status: status.transfer.REJECTED
+        }
       }
-    }
+      return transfer
+    })
   }
 }
 

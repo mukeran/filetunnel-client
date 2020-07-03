@@ -3,7 +3,7 @@
 import { app, BrowserWindow, Menu } from 'electron'
 import { registerIpc } from './ipc'
 import { client } from '../client'
-import { server } from '../p2p/server'
+import { server, startServer } from '../p2p/server'
 
 /**
  * Set `__static` path to static files in production
@@ -39,6 +39,7 @@ function createWindow () {
 
 app.on('ready', () => {
   createWindow()
+  startServer()
   /* Hide application menu */
   Menu.setApplicationMenu(Menu.buildFromTemplate([]))
 })

@@ -1,12 +1,13 @@
 import { sendRequest } from '../index'
 
 export default {
-  login: (username, password) => sendRequest({ action: 'login', data: { username, password } }),
+  login: (username, password, transferPort) => sendRequest({ action: 'login', data: { username, password, transferPort } }),
   register: (username, password, publicKey) => sendRequest({ action: 'register', data: { username, password, publicKey } }),
   logout: () => sendRequest({ action: 'logout' }),
-  changePassword: (username, password, newPassword) => sendRequest({
+  changePassword: (password, newPassword) => sendRequest({
     action: 'changePassword',
-    data: { username, password, newPassword }
+    data: { password, newPassword }
   }),
-  resumeSession: sessionId => sendRequest({ action: 'resumeSession', data: { sessionId } })
+  resumeSession: (sessionId, transferPort) => sendRequest({ action: 'resumeSession', data: { sessionId, transferPort } }),
+  requestPublicKey: userId => sendRequest({ action: 'requestPublicKey', data: { userId } })
 }

@@ -6,14 +6,14 @@ import { connectServer, registerAliveTimeout } from '../client'
 import request from '../client/request'
 import { logger } from '../logger'
 import { send } from '../p2p/client'
-import { startServer } from '../p2p/server'
+import { startServer, stopServer } from '../p2p/server'
 import store from '../renderer/store'
 import status from '../client/status'
 
 const channels = {
   connectServer: () => connectServer(),
-  login: (event, { username, password }) => {
-    request.login(username, password)
+  login: (event, { username, password, transferPort }) => {
+    request.login(username, password, transferPort)
       .then((packet) => {
         event.sender.send('loggedIn', packet)
       })
@@ -24,8 +24,8 @@ const channels = {
         event.sender.send('registered', packet)
       })
   },
-  changePassword: (event, { username, password, newPassword }) => {
-    request.changePassword(username, password, newPassword)
+  changePassword: (event, { password, newPassword }) => {
+    request.changePassword(password, newPassword)
       .then((packet) => {
         event.sender.send('passwordChanged', packet)
       })
@@ -37,7 +37,7 @@ const channels = {
       })
   },
   resumeSession: (event) => {
-    request.resumeSession(store.state.user.sessionId)
+    request.resumeSession(store.state.user.sessionId, store.state.system.transferPort)
       .then(packet => {
         if (packet.status !== status.OK) {
           store.dispatch('updateUserInfo', {
@@ -95,7 +95,8 @@ const channels = {
     const privateKey = key.exportKey('pkcs1-private-pem')
     event.sender.send('keyPairGenerated', { publicKey, privateKey })
   },
-  startTransferServer: () => { startServer().catch((err) => { logger.error(err) }) },
+  stopTransferServer: () => { stopServer() },
+  startTransferServer: () => { startServer() },
   sendFile: (event, { ip, port, myUid, targetUid, deadline, filePath, size, sha1 }) => {
     send(ip, port, myUid, targetUid, deadline, filePath, size, sha1).catch(err => {
       logger.error(err)

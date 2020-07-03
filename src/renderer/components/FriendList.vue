@@ -62,7 +62,7 @@
       title="发送文件"
       :visible.sync="isNewTransferDialogVisible"
     >
-      <NewTransfer/>
+      <NewTransfer @transfer-sent="isNewTransferDialogVisible = false"/>
     </el-dialog>
   </div>
 </template>

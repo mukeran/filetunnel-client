@@ -1,13 +1,19 @@
 <template>
-  <el-card shadow="hover" class="transfer" :body-style="{ height: '80px' }">
+  <el-card shadow="hover" class="transfer" :body-style="{ height: '150px' }">
     <el-row style="height: 100%">
       <el-col :span="9" style="height: 100%">
-        <div class="transfer-control">
-          <div>
-            <span style="font-size: 20px">{{ transfer.filename }}</span>
+        <div class="transfer-control" style="width: 100%">
+          <div style="width: 100%">
+            <span style="font-size: 20px">{{ transfer.filename }}</span><br>
             <span style="font-size: 12px">{{ getReadableFileSizeString(transfer.size) }}</span>
             <el-tag size="mini" type="primary" v-if="transfer.status === status.transfer.REQUEST">
               <i class="el-icon-question"></i>请求
+            </el-tag>
+            <el-tag size="mini" type="warning" v-else-if="transfer.status === status.transfer.CONNECTING">
+              <i class="el-icon-sort"></i>等待连接
+            </el-tag>
+            <el-tag size="mini" type="warning" v-else-if="transfer.status === status.transfer.PENDING">
+              <i class="el-icon-sort"></i>等待对方接受
             </el-tag>
             <el-tag size="mini" type="warning" v-else-if="transfer.status === status.transfer.TRANSFERRING">
               <i class="el-icon-sort"></i>传输
@@ -24,13 +30,15 @@
             <el-tag size="mini" type="danger" v-else-if="transfer.status === status.transfer.REJECTED">
               <i class="el-icon-error"></i>拒绝
             </el-tag>
-            <el-tag size="mini" type="success" v-if="transfer.mode === 0">在线中转</el-tag>
-            <el-tag size="mini" type="success" v-if="transfer.mode === 1">在线P2P</el-tag>
+            <el-tag size="mini" type="success" v-if="transfer.mode === 0">在线P2P</el-tag>
+            <el-tag size="mini" type="success" v-if="transfer.mode === 1">在线中转</el-tag>
             <el-tag size="mini" type="info" v-if="transfer.mode === 2">离线</el-tag>
             <br>
-            <span style="font-size: 10px">SHA1: {{ transfer.sha1 }}</span><br>
+            <span style="font-size: 10px">{{ transfer.sha1 }}</span><br>
             <span style="font-size: 12px">
-              <template v-if="transfer.status === status.transfer.REQUEST">
+              <template v-if="transfer.status === status.transfer.REQUEST
+               || transfer.status === status.transfer.CONNECTING
+               || transfer.status === status.transfer.PENDING">
                 请求时间：{{ new Date(transfer.requestTime).toLocaleString() }}<br>
                 过期时间：{{ new Date(transfer.deadline).toLocaleString() }}
               </template>
@@ -63,7 +71,7 @@
               :text-inside="true"
               :stroke-width="25"
               style="width: 75%"
-              ></el-progress>
+            ></el-progress>
             <span style="font-size: 13px">{{ getReadableFileSizeString(transfer.speed) }}/s</span>
           </template>
           <template v-else>&nbsp;</template>
@@ -71,10 +79,14 @@
       </el-col>
       <el-col :span="5" style="height: 100%">
         <div v-if="transfer.status === status.transfer.REQUEST" class="transfer-control">
-          <el-button type="primary" icon="el-icon-check" @click="() => { handleRequest({ accept: true }) }" circle></el-button>
-          <el-button type="danger" icon="el-icon-close" @click="() => { handleRequest({ accept: false }) }" circle></el-button>
+          <el-button type="primary" icon="el-icon-check" @click="() => { handleRequest({ accept: true }) }"
+                     circle></el-button>
+          <el-button type="danger" icon="el-icon-close" @click="() => { handleRequest({ accept: false }) }"
+                     circle></el-button>
         </div>
-        <div v-else-if="transfer.status === status.transfer.TRANSFERRING" class="transfer-control">
+        <div v-else-if="transfer.status === status.transfer.CONNECTING
+    || transfer.status === status.transfer.PENDING
+    || transfer.status === status.transfer.TRANSFERRING" class="transfer-control">
           <el-button type="danger" icon="el-icon-close" @click="cancelTransfer" circle></el-button>
         </div>
         <div v-else-if="transfer.status === status.transfer.FINISHED" class="transfer-control">
@@ -100,12 +112,14 @@
       transfer: Object
     },
     computed: {
-      status: () => status
+      status: () => status,
+      filename () {
+      }
     },
     methods: {
       getReadableFileSizeString: function (fileSizeInBytes) {
-        var i = -1
-        var byteUnits = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
+        let i = -1
+        const byteUnits = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
         do {
           fileSizeInBytes = fileSizeInBytes / 1024
           i++
@@ -116,25 +130,26 @@
       handleRequest: function ({ accept }) {
         let _id = this.transfer._id
         if (!accept) {
-          ipcRenderer.emit('fileRequest' + _id, { accept })
+          ipcRenderer.send('fileRequest' + _id, { accept })
           return
         }
         remote.dialog.showSaveDialog({
           title: '选择保存路径',
           defaultPath: this.transfer.filename
-        }).then(result => {
-          if (result.canceled) {
+        }, result => {
+          if (typeof result === 'undefined') {
             return
           }
-          this.$store.dispatch('updatePath', { filePath: result.filePath })
-          ipcRenderer.emit('fileRequest' + _id, { accept, filePath: result.filePath })
+          console.log(result)
+          this.$store.dispatch('updatePath', { filePath: result, _id })
+          ipcRenderer.send('fileRequest' + _id, { accept, filePath: result })
         })
       },
       removeTransfer: function () {
         this.$store.dispatch('removeTransfer', { _id: this.transfer._id })
       },
       cancelTransfer: function () {
-        ipcRenderer.emit('cancelTransfer' + this.transfer._id)
+        ipcRenderer.send('cancelTransfer' + this.transfer._id)
       },
       openFolder: function () {
         shell.openItem(dirname(this.transfer.filePath))
@@ -150,6 +165,7 @@
     justify-content: space-around;
     align-items: center;
   }
+
   .transfer .transfer-control {
     height: 100%;
     display: flex;

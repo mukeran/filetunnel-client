@@ -2,17 +2,16 @@
  * functions about server
  */
 
-const { getProgresser } = require('./streams')
+const { getProgress } = require('./streams')
 const { logger } = require('../logger')
 const { createServer, createConnection } = require('net')
 const { createWriteStream } = require('fs')
 const { createDecipheriv } = require('crypto')
 const { decryptString, encryptString, cipherAlgorithm, decryptKey, verifyString } = require('./encrypt')
-const { Stream } = require('stream')
 const { createUnzip } = require('zlib')
 const { getPrivateKey, getPublicKey } = require('./key.js')
-const store = require('../renderer/store')
-const status = require('../client/status')
+const store = require('../renderer/store').default
+const status = require('../client/status').default
 const { ipcMain } = require('electron')
 
 export let server = null
@@ -22,36 +21,39 @@ export let server = null
  * @returns {Promise} port
  */
 export function startServer () {
-  return new Promise((resolve, reject) => {
-    if (server !== null) {
-      server.end()
-      server = null
-    }
-
-    server = createServer()
-    server.on('listening', () => {
-      logger.info(`P2P Server started on port: ${server.address().port}`)
-      store.dispatch('setTransferPort', { port: server.address().port })
-      resolve(server.address().port)
-    })
-    server.on('error', (e) => {
-      logger.error(e)
-      server = null
-      reject(e)
-    })
-    server.on('connection', (socket) => {
-      let buffer = Buffer.alloc(0) // Data buffer per connection socket
-      let state = { socket, buffer }
-      logger.info(`Received connection from ${socket.remoteAddress}:${socket.remotePort}`)
-      socket.on('error', (err) => { logger.error(err) })
-      socket.on('data', (data) => processData(data, state, onFileRequest))
-      socket.on('close', () => {
-        logger.info(`Connection from ${socket.remoteAddress}:${socket.remotePort} closed`)
-      })
-    })
-    logger.info(`P2P server starting ...`)
-    server.listen(0) // listen on random port (provided by os)
+  if (server !== null) {
+    server.close()
+    server = null
+  }
+  server = createServer()
+  server.on('listening', () => {
+    store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: true })
+    logger.info(`P2P Server started on port: ${server.address().port}`)
+    store.dispatch('updateTransferPort', { port: server.address().port })
   })
+  server.on('error', (e) => {
+    logger.error(e)
+    // store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: false })
+    // store.dispatch('updateTransferPort', { port: 0 })
+    // server = null
+  })
+  server.on('close', () => {
+    store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: false })
+    store.dispatch('updateTransferPort', { port: 0 })
+    server = null
+  })
+  server.on('connection', (socket) => {
+    let buffer = Buffer.alloc(0) // Data buffer per connection socket
+    let state = { socket, buffer }
+    logger.info(`Received connection from ${socket.remoteAddress}:${socket.remotePort}`)
+    socket.on('error', (err) => { logger.error(err) })
+    socket.on('data', (data) => processData(data, state, onFileRequest))
+    socket.on('close', () => {
+      logger.info(`Connection from ${socket.remoteAddress}:${socket.remotePort} closed`)
+    })
+  })
+  logger.info(`P2P server starting ...`)
+  server.listen(0) // listen on random port (provided by os)
 }
 
 /**
@@ -92,6 +94,8 @@ async function onFileRequest (data, socket) {
   data.verify = JSON.stringify(data)
   data.signature = sig
   let publicKey = await getPublicKey(data.userID)
+  logger.debug('sender public key: ' + publicKey)
+  logger.debug('data to verify: ' + data.verify)
   data.verified = verifyString(socket.sq + '\n' + data.verify, sig, publicKey)
   if (!data.verified) {
     logger.error(`data signature check failed: ${JSON.stringify(data)}`)
@@ -100,9 +104,11 @@ async function onFileRequest (data, socket) {
     delete data.verify
   }
   let privateKey = await getPrivateKey()
+  logger.debug('my private key: ' + privateKey)
   data.key = decryptKey(data.key, privateKey)
   data.fileInfo = JSON.parse(decryptString(data.key.slice(0, 32), data.fileInfo))
-  let _id = await store.dispatch('getId')
+  let _id = store.state.transfer._id
+  await store.dispatch('getId')
   let transferTask = {
     _id,
     sha1: data.fileInfo.sha1,
@@ -116,15 +122,17 @@ async function onFileRequest (data, socket) {
     status: status.transfer.REQUEST,
     filePath: ''
   }
-  store.dispatch('createTransfer', transferTask)
+  await store.dispatch('createTransfer', transferTask)
   logger.info(`P2P file request: ${JSON.stringify(data)}`)
   socket._id = _id
 
   // TODO emit IPC event data.deadline
-  ipcMain.once('fileRequest' + _id, (event, { accept, savePath }) => {
+  ipcMain.once('fileRequest' + _id, (event, { accept, filePath }) => {
     if (accept) {
-      acceptFileRequest(data, socket, savePath).catch((err) => { logger.error(err) })
+      logger.debug('fileRequest' + _id + ' is accepted')
+      acceptFileRequest(data, socket, filePath).catch((err) => { logger.error(err) })
     } else {
+      logger.debug('fileRequest' + _id + ' is accepted')
       rejectFileRequest(data, socket)
     }
   })
@@ -155,15 +163,28 @@ export async function acceptFileRequest (data, socket, savePath) {
   writeStream.on('error', (err) => {
     logger.error(err)
     store.dispatch('failTransfer', { _id: socket._id })
-    throw err
+    // throw err
   })
   let decipher = createDecipheriv(cipherAlgorithm, data.key.slice(0, 32), data.key.slice(32))
+  decipher.on('error', (err) => {
+    logger.error(err)
+    store.dispatch('failTransfer', { _id: socket._id })
+    // throw err
+  })
   let unzip = createUnzip()
-  Stream.pipeline([socket, decipher, unzip, writeStream], () => {
+  // stream.pipeline([socket, decipher, unzip, writeStream], () => {
+  //   logger.info('data transfer finished.')
+  //   store.dispatch('finishTransfer', { _id: socket._id })
+  // })
+  socket
+    .pipe(decipher)
+    .pipe(unzip)
+    .pipe(writeStream)
+  writeStream.on('close', () => {
     logger.info('data transfer finished.')
     store.dispatch('finishTransfer', { _id: socket._id })
   })
-  writeStream.on('data', getProgresser(data.fileInfo.size, (e, speedData) => {
+  unzip.on('data', getProgress(data.fileInfo.size, (e, speedData) => {
     store.dispatch('updateSpeed', { _id: socket._id, speedData })
   }))
 }
@@ -241,7 +262,7 @@ export function processData (data, pdata, callback) {
     }
   }
   socket.sq = sq
-  callback(packet, socket)
+  callback(packet, socket).catch(err => { logger.error(err) })
 }
 
 /**
