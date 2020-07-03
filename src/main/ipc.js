@@ -9,7 +9,9 @@ import { send } from '../p2p/client'
 import { startServer, stopServer } from '../p2p/server'
 import store from '../renderer/store'
 import status from '../client/status'
-import transmit from '../p2p/transmit' // 现在还没有
+import { connect } from '../p2p/transmit' // 现在还没有
+import { createConnection } from 'net'
+import config from '../config'
 
 const channels = {
   connectServer: () => connectServer(),
@@ -24,8 +26,16 @@ const channels = {
     request.requestTransmit(targetUid)
       .then((packet) => {
         event.sender.send('Transmit approved', packet)
-        const transmitId = packet.data
-        transmit(transmitId, deadline, filePath, size, sha1)
+        const transmitId = packet.data._id
+        let socket = createConnection(config.HOST, config.DATA_PORT)
+        if (transmitId === '') {
+          logger.error('')
+        }
+        socket.on('error', (err) => {
+          logger.error(err)
+        })
+
+        connect(transmitId, deadline, filePath, size, sha1)
           .then((packet) => {
           // 中转发送成功
           })

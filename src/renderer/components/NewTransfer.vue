@@ -124,7 +124,7 @@
         }
         // 中转方式 先请求Transmit 再调用P2P进行传输
         if (this.form.mode === '1') {
-          ipcRenderer.send('requestTransmit', { targetUid: current._id })
+          ipcRenderer.send('requestTransmit', { targetUid: current._id,deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
           this.this.$message.success('中转发送成功')
           this.$emit('transfer-sent')
         }

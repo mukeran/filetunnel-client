@@ -11,5 +11,5 @@ export default {
   changePublicKey: (publicKey) => sendRequest({ action: 'changePublicKey', data: { publicKey } }),
   resumeSession: (sessionId, transferPort) => sendRequest({ action: 'resumeSession', data: { sessionId, transferPort } }),
   requestPublicKey: userId => sendRequest({ action: 'requestPublicKey', data: { userId } }),
-  requestTransmit: (targetUid, deadline, filePath, size, sha1) => sendRequest({ action: 'requestTransmit', data: { userId: targetUid, deadline, filePath, size, sha1 } })
+  requestTransmit: (targetUid) => sendRequest({ action: 'requestTransmit', data: { _Id: targetUid } })
 }

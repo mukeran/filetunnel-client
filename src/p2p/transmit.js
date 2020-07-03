@@ -15,3 +15,5 @@
  */
 
 /* transmit(socket, uid, targetUid, deadline, filePath, size, sha1) */
+export function connect (socket) {
+}
