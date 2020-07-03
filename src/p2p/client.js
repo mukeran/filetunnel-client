@@ -84,21 +84,13 @@ export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath
 export async function send (ip, port, uid, targetUid, deadline, filePath, size, sha1) {
   let _id = store.state.transfer._id
   await store.dispatch('getId')
+  let client = createConnection(port, ip)
+  await sendBySocket(client, _id, uid, targetUid, deadline, filePath, size, sha1)
+}
+
+export async function sendBySocket (client, _id, uid, targetUid, deadline, filePath, size, sha1) {
   let filename = basename(filePath)
-  let transferTask = {
-    _id,
-    sha1,
-    size,
-    filename,
-    filePath,
-    from: `${ip}:${port}`,
-    isDownload: false,
-    requestTime: new Date().toISOString(),
-    deadline,
-    mode: 0,
-    status: status.transfer.PENDING
-  }
-  store.dispatch('createTransfer', transferTask)
+
   let publicKey = await getPublicKey(targetUid)
   let privateKey = await getPrivateKey()
   logger.debug('myPrivateKey: ' + privateKey)
@@ -114,7 +106,6 @@ export async function send (ip, port, uid, targetUid, deadline, filePath, size, 
   let sig = signString(sq + '\n' + JSON.stringify(data), privateKey)
   logger.debug('data to sign: ' + JSON.stringify(data))
   data.signature = sig
-  let client = createConnection(port, ip)
   client.on('error', (err) => {
     store.dispatch('failTransfer', { _id })
     logger.error(err)

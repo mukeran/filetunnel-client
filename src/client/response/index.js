@@ -5,7 +5,8 @@ import { logger } from '../../logger'
 
 const actions = {
   ...require('./friend'),
-  ...require('./offlineTransfer')
+  ...require('./offlineTransfer'),
+  ...require('./transmit')
 }
 
 /**

@@ -118,9 +118,15 @@
         }
         console.log(current)
         // TODO my.isNAT
-        if (current.isNAT) {
-          this.$message.error('目标在NAT内, 不能P2P传输')
+        if (current.isNAT && this.form.mode === '0') {
+          this.$message.error('目标在NAT内, 不能P2P传输，请选择中转方式')
           return
+        }
+        // 中转方式 先请求Transmit 再调用P2P进行传输
+        if (this.form.mode === '1') {
+          ipcRenderer.send('requestTransmit', { targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
+          this.this.$message.success('中转请求已发送')
+          this.$emit('transfer-sent')
         }
         if (this.form.mode === '0') {
           ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
