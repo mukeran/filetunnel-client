@@ -77,7 +77,7 @@
     methods: {
       logout () {
         ipcRenderer.once('loggedOut', (event, packet) => {
-          if (packet.status === status.OK) {
+          if (packet.status === status.OK || packet.status === status.session.NO_SUCH_SESSION) {
             this.$store.dispatch('updateUserInfo', {
               _id: null,
               username: null,

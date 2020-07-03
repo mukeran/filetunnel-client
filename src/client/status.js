@@ -16,13 +16,14 @@ export default {
   transfer: {
     REQUEST: 1,
     CONNECTING: 2,
-    REJECTED: 3,
-    TRANSFERRING: 4,
-    FINISHED: 5,
-    CANCELLED: 6,
-    PAUSED: 7,
-    WAITING: 8,
-    FAILED: 9
+    PENDING: 3,
+    REJECTED: 4,
+    TRANSFERRING: 5,
+    FINISHED: 6,
+    CANCELLED: 7,
+    PAUSED: 8,
+    WAITING: 9,
+    FAILED: 10
   },
   connection: {
     CONNECTED: 0,

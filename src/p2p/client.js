@@ -1,4 +1,4 @@
-import { getProgresser } from './streams'
+import { getProgress } from './streams'
 import { ipcMain } from 'electron'
 
 const { logger } = require('../logger')
@@ -97,7 +97,7 @@ export async function send (ip, port, uid, targetUid, deadline, filePath, size, 
     requestTime: new Date().toISOString(),
     deadline,
     mode: 0,
-    status: status.transfer.CONNECTING
+    status: status.transfer.PENDING
   }
   store.dispatch('createTransfer', transferTask)
   let publicKey = await getPublicKey(targetUid)
@@ -173,14 +173,15 @@ async function onFileResponse (data, socket) {
   //   logger.info('data transfer finished.')
   //   store.dispatch('finishTransfer', { _id: socket._id })
   // })
-  readStream.pipe(gzip)
+  readStream
+    .pipe(gzip)
     .pipe(cipher)
     .pipe(socket)
   socket.on('finish', () => {
     logger.info('data transfer finished.')
     store.dispatch('finishTransfer', { _id: socket._id })
   })
-  readStream.on('data', getProgresser(socket.fData.fileInfo.size, (e, speedData) => {
+  readStream.on('data', getProgress(socket.fData.fileInfo.size, (e, speedData) => {
     store.dispatch('updateSpeed', { _id: socket._id, speedData })
   }))
 }

@@ -160,6 +160,9 @@ export async function connectServer () {
  */
 export function sendRequest (packet, timeout = config.connection.RESPONSE_TIMEOUT) {
   return new Promise((resolve, reject) => {
+    if (client === null) {
+      reject(new Error('Not connected'))
+    }
     /* Register resolve callback and add sq to packet */
     const sq = callback.register(resolve)
     packet = { ...packet, sq }

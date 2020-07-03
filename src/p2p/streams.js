@@ -13,19 +13,20 @@ export function IVInserter (iv) {
     }
     callback(null, chunk)
   }
-  let tr = new Transform({ transform })
-  return tr
+  return new Transform({ transform })
 }
 
-export function getProgresser (total, cb) {
+export function getProgress (total, cb) {
   let speeder = speedometer()
   let transferred = 0
-  let onData = (data) => {
+  let timeout = null
+  return (data) => {
     transferred += data.length
-    var speed = speeder(data.length)
+    const speed = speeder(data.length)
+    if (timeout !== null) return
+    timeout = setTimeout(() => {
+      timeout = null
+    }, 1000)
     cb(null, { transferred, total, speed })
   }
-  return onData
 }
-
-// module.exports = { IVInserter, recvProgresser, sendProgresser }

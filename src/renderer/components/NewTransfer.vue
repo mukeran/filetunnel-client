@@ -51,7 +51,7 @@
 
 <script>
   import { remote, ipcRenderer } from 'electron'
-import { mapState } from 'vuex'
+  import { mapState } from 'vuex'
   export default {
     name: 'NewTransfer',
     data () {
@@ -83,6 +83,7 @@ import { mapState } from 'vuex'
         remote.dialog.showOpenDialog({
           properties: ['openFile']
         }, filePath => {
+          if (typeof filePath === 'undefined') return
           this.form.filePath = filePath[0]
           const fs = remote.require('fs')
           fs.stat(filePath[0], (err, stats) => {
@@ -103,8 +104,8 @@ import { mapState } from 'vuex'
         })
       },
       newTransfer () {
-        if (this.form.sha1 === '') {
-          this.$message.error('Hash Calculating...')
+        if (this.form.sha1 === '正在计算SHA1' || this.form.sha1 === '' || this.form.sha1 === '文件信息读取失败') {
+          this.$message.error('SHA1计算中或者计算错误，请重新选择文件')
           return
         }
         let current

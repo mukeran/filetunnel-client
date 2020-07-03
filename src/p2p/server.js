@@ -2,7 +2,7 @@
  * functions about server
  */
 
-const { getProgresser } = require('./streams')
+const { getProgress } = require('./streams')
 const { logger } = require('../logger')
 const { createServer, createConnection } = require('net')
 const { createWriteStream } = require('fs')
@@ -176,14 +176,15 @@ export async function acceptFileRequest (data, socket, savePath) {
   //   logger.info('data transfer finished.')
   //   store.dispatch('finishTransfer', { _id: socket._id })
   // })
-  socket.pipe(decipher)
+  socket
+    .pipe(decipher)
     .pipe(unzip)
     .pipe(writeStream)
   writeStream.on('close', () => {
     logger.info('data transfer finished.')
     store.dispatch('finishTransfer', { _id: socket._id })
   })
-  writeStream.on('data', getProgresser(data.fileInfo.size, (e, speedData) => {
+  unzip.on('data', getProgress(data.fileInfo.size, (e, speedData) => {
     store.dispatch('updateSpeed', { _id: socket._id, speedData })
   }))
 }

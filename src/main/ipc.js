@@ -24,8 +24,8 @@ const channels = {
         event.sender.send('registered', packet)
       })
   },
-  changePassword: (event, { username, password, newPassword }) => {
-    request.changePassword(username, password, newPassword)
+  changePassword: (event, { password, newPassword }) => {
+    request.changePassword(password, newPassword)
       .then((packet) => {
         event.sender.send('passwordChanged', packet)
       })
