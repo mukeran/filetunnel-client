@@ -1,9 +1,9 @@
 <template>
-  <el-card shadow="hover" class="transfer" :body-style="{ height: '100px' }">
+  <el-card shadow="hover" class="transfer" :body-style="{ height: '150px' }">
     <el-row style="height: 100%">
       <el-col :span="9" style="height: 100%">
-        <div class="transfer-control">
-          <div>
+        <div class="transfer-control" style="width: 100%">
+          <div style="width: 100%">
             <span style="font-size: 20px">{{ transfer.filename }}</span><br>
             <span style="font-size: 12px">{{ getReadableFileSizeString(transfer.size) }}</span>
             <el-tag size="mini" type="primary" v-if="transfer.status === status.transfer.REQUEST">
