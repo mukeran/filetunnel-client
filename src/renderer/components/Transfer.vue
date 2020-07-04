@@ -135,6 +135,13 @@
           ipcRenderer.send('fileRequest' + _id, { accept })
           return
         }
+        if (this.transfer.mode === 0 && this.transfer.deadline) {
+          if (new Date(this.transfer.deadline) < new Date()) {
+            ipcRenderer.send('cancelTransfer' + _id)
+            this.$store.dispatch('failTransfer', { _id })
+            return
+          }
+        }
         remote.dialog.showSaveDialog({
           title: '选择保存路径',
           defaultPath: this.transfer.filename
@@ -151,9 +158,10 @@
       },
       cancelTransfer: function () {
         ipcRenderer.send('cancelTransfer' + this.transfer._id)
+        this.$store.dispatch('failTransfer', { _id: this.transfer._id })
       },
       openFolder: function () {
-        shell.openItem(remote.require('path').dirname(this.transfer.filePath))
+        shell.showItemInFolder(this.transfer.filePath)
       }
     }
   }

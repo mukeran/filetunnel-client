@@ -68,6 +68,9 @@ registerIpc()
 process.on('unhandledRejection', function (promise, reason) {
   console.log(promise)
   console.log(reason)
+}).on('uncaughtException', function (promise, reason) {
+  console.log(promise)
+  console.log(reason)
 })
 
 /**

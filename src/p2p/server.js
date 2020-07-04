@@ -33,19 +33,16 @@ export function startServer () {
     logger.info(`P2P Server started on port: ${server.address().port}`)
     store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: true })
     store.dispatch('updateTransferPort', { port: server.address().port })
-    request.updateTransferPort(server.address().port)
+    request.updateTransferPort(server.address().port).catch(err => { logger.error(err) })
   })
   server.on('error', (e) => {
     logger.error(e)
-    // store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: false })
-    // store.dispatch('updateTransferPort', { port: 0 })
-    // server = null
   })
   server.on('close', () => {
     logger.debug('P2P server closed')
     store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: false })
     store.dispatch('updateTransferPort', { port: 0 })
-    request.updateTransferPort(0)
+    request.updateTransferPort(0).catch(err => { logger.error(err) })
     server = null
   })
   server.on('connection', (socket) => {
@@ -117,7 +114,6 @@ export async function onFileRequest (data, socket, mode) {
   logger.info(`P2P file request: ${JSON.stringify(data)}`)
   socket._id = _id
 
-  // TODO emit IPC event data.deadline
   ipcMain.once('fileRequest' + _id, (event, { accept, filePath }) => {
     if (accept) {
       logger.debug('fileRequest' + _id + ' is accepted')

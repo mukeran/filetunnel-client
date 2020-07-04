@@ -80,6 +80,9 @@ export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath
 }
 
 export async function send (ip, port, uid, targetUid, deadline, filePath, size, sha1) {
+  if (port === '0' || port === 0) {
+    return
+  }
   let _id = store.state.transfer._id
   await store.dispatch('getId')
   let filename = basename(filePath)

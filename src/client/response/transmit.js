@@ -2,11 +2,15 @@ import { createConnection } from 'net'
 import config from '../../config'
 import { callbacks, transmitConnect } from '../../p2p/transmit'
 import { logger } from '../../logger'
+import { mainWindow } from '../../main'
 
 export function sendTransmit (packet) {
   const { _id } = packet.data
   let socket = createConnection(config.server.TRANSFER_PORT, config.server.HOST)
-  socket.on('error', (err) => { logger.error(err) })
+  socket.on('error', (err) => {
+    logger.error(err)
+    mainWindow.webContents.send('message', { title: '出现中转请求失败', type: 'error' })
+  })
   socket.on('close', () => {
     logger.info(`Transmit Connection for id: ${_id} closed`)
   })
