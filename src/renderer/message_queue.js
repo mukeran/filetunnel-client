@@ -6,8 +6,9 @@ let timeout = null
 
 function next () {
   if (messageQueue.length === 0) return
-  messageQueue[0]()
+  const cb = messageQueue[0]
   messageQueue = messageQueue.slice(1)
+  cb()
   timeout = setTimeout(() => { timeout = null; next() }, 100)
 }
 

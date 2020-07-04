@@ -30,8 +30,10 @@
           <template slot-scope="scope">
             <template v-if="scope.row.isOnline">
               <span>在线</span>&nbsp;
-              <span v-if="scope.row.isNAT">NAT</span>
-              <span v-else>{{ `${scope.row.ip}:${scope.row.port}` }}</span>
+              <el-tooltip effect="dark" content="对方为 NAT 状态时，无法进行 P2P 传输" placement="top" v-if="scope.row.isNAT">
+                <el-tag type="danger" v-if="scope.row.isNAT">NAT</el-tag>
+              </el-tooltip>
+              <span>{{ `${scope.row.ip}:${scope.row.port}` }}</span>
             </template>
             <template v-else>
               <span>离线</span>

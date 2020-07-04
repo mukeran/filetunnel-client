@@ -36,6 +36,12 @@
             this.$emit('request-sent')
           } else if (packet.status === status.user.NO_SUCH_USER) {
             this.$messageQueue.error('没有此用户')
+          } else if (packet.status === status.user.ALREADY_FRIEND) {
+            this.$messageQueue.error(`你和 ${this.form.username} 已经是朋友了`)
+          } else if (packet.status === status.user.FRIEND_REQUEST_EXISTED) {
+            this.$messageQueue.error('已经向目标发送过好友请求')
+          } else if (packet.status === status.user.CANNOT_OPERATE_SELF) {
+            this.$messageQueue.error('你不能添加自己为好友')
           } else {
             this.$messageQueue.error('请求发送失败')
           }
