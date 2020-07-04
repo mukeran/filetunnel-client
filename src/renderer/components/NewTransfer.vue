@@ -136,6 +136,10 @@
             break
           }
         }
+        if (current.port === '0' || current.port === 0) {
+          this.$messageQueue.error('对方没有启用P2P传输')
+          return
+        }
         if (current.isNAT && this.form.mode === '0') {
           this.$messageQueue.error('目标在NAT内, 不能P2P传输，请选择中转方式')
           return

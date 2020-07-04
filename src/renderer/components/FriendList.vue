@@ -58,7 +58,7 @@
               size="mini"
               @click="transferTo = scope.row._id; isNewTransferDialogVisible = true"
             ><i class="el-icon-s-promotion"></i>发送</el-button>
-            <el-button type="danger" size="mini" @click="deleteFriend(scope.row._id)"><i class="el-icon-delete-solid"></i>删除</el-button>
+            <el-button type="danger" size="mini" @click="deleteFriend(scope.row)"><i class="el-icon-delete-solid"></i>删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -127,12 +127,13 @@
         })
         ipcRenderer.send('requestFriendList')
       },
-      deleteFriend (userId) {
+      deleteFriend (friend) {
+        const userId = friend._id
         ipcRenderer.once('friendDeleted', (event, packet) => {
           if (packet.status !== status.OK) {
-            this.$messageQueue.error(`删除好友 ${userId} 失败`)
+            this.$messageQueue.error(`删除好友 ${friend.username} 失败`)
           } else {
-            this.$messageQueue.success(`已删除好友 ${userId}`)
+            this.$messageQueue.success(`已删除好友 ${friend.username}`)
             this.requestFriendList()
           }
         })

@@ -32,6 +32,7 @@ import { ipcRenderer } from 'electron'
           } else {
             this.$messageQueue.error('回答好友请求失败')
           }
+          this.$store.dispatch('removeFriendRequest', _id)
         })
         ipcRenderer.send('answerFriendRequest', { _id, operation })
       }
