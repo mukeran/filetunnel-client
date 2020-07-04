@@ -2,7 +2,8 @@ import status from '../../../client/status'
 
 const state = {
   transfers: [],
-  _id: 1
+  _id: 1,
+  active: 0
 }
 
 const mutations = {
@@ -13,6 +14,9 @@ const mutations = {
   },
   createTransfer (state, transferTask) {
     state.transfers.push(transferTask)
+    state.transfers.sort((a, b) => {
+      return new Date(a.requestTime) < new Date(b.requestTime)
+    })
   },
   removeTransfer (state, { _id }) {
     state.transfers = state.transfers.filter(transfer => transfer._id !== _id)
@@ -136,8 +140,8 @@ const actions = {
   updateSpeed ({ commit }, { _id, speedData }) {
     commit('updateSpeed', { _id, speedData })
   },
-  updatePath ({ commit }, { _id, savePath }) {
-    commit('updatePath', { _id, savePath })
+  updatePath ({ commit }, { _id, filePath }) {
+    commit('updatePath', { _id, filePath })
   },
   finishTransfer ({ commit }, { _id }) {
     commit('finishTransfer', { _id })

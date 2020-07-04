@@ -2,6 +2,9 @@
  * functions about server
  */
 
+import request from '../client/request'
+import { mainWindow } from '../main'
+
 const { getProgress } = require('./streams')
 const { logger } = require('../logger')
 const { createServer } = require('net')
@@ -27,9 +30,10 @@ export function startServer () {
   }
   server = createServer()
   server.on('listening', () => {
-    store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: true })
     logger.info(`P2P Server started on port: ${server.address().port}`)
+    store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: true })
     store.dispatch('updateTransferPort', { port: server.address().port })
+    request.updateTransferPort(server.address().port)
   })
   server.on('error', (e) => {
     logger.error(e)
@@ -38,8 +42,10 @@ export function startServer () {
     // server = null
   })
   server.on('close', () => {
+    logger.debug('P2P server closed')
     store.dispatch('updateEnableP2PTransfer', { enableP2PTransfer: false })
     store.dispatch('updateTransferPort', { port: 0 })
+    request.updateTransferPort(0)
     server = null
   })
   server.on('connection', (socket) => {
@@ -71,7 +77,7 @@ export function stopServer () {
  * @param {Object} data the request received
  * @param {Socket} socket
  */
-export async function onFileRequest (data, socket) {
+export async function onFileRequest (data, socket, mode) {
   let sig = data.signature
   delete data.signature
   data.verify = JSON.stringify(data)
@@ -81,6 +87,7 @@ export async function onFileRequest (data, socket) {
   logger.debug('data to verify: ' + data.verify)
   data.verified = verifyString(socket.sq + '\n' + data.verify, sig, publicKey)
   if (!data.verified) {
+    mainWindow.webContents.send('message', { title: '新的文件传输请求校验错误', duration: 0 })
     logger.error(`data signature check failed: ${JSON.stringify(data)}`)
     socket.end()
   } else {
@@ -101,11 +108,12 @@ export async function onFileRequest (data, socket) {
     isDownload: true,
     requestTime: new Date().toISOString(),
     deadline: data.deadline,
-    mode: 0,
+    mode: mode || 0,
     status: status.transfer.REQUEST,
     filePath: ''
   }
   await store.dispatch('createTransfer', transferTask)
+  mainWindow.webContents.send('message', { title: '收到新的文件传输请求', duration: 0 })
   logger.info(`P2P file request: ${JSON.stringify(data)}`)
   socket._id = _id
 
@@ -121,6 +129,7 @@ export async function onFileRequest (data, socket) {
   })
   ipcMain.once('cancelTransfer' + _id, (event) => {
     socket.end()
+    store.dispatch('failTransfer', { _id: socket._id })
   })
   socket.on('end', () => {
     ipcMain.removeAllListeners(['fileRequest' + _id, 'cancelTransfer' + _id])
@@ -245,7 +254,7 @@ export function processData (data, pdata, callback) {
     }
   }
   socket.sq = sq
-  callback(packet, socket).catch(err => { logger.error(err) })
+  callback(packet, socket, pdata.mode).catch(err => { logger.error(err) })
 }
 
 /**

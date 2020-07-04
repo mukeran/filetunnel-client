@@ -11,5 +11,6 @@ export default {
   changePublicKey: (publicKey) => sendRequest({ action: 'changePublicKey', data: { publicKey } }),
   resumeSession: (sessionId, transferPort) => sendRequest({ action: 'resumeSession', data: { sessionId, transferPort } }),
   requestPublicKey: userId => sendRequest({ action: 'requestPublicKey', data: { userId } }),
-  requestTransmit: (targetUid) => sendRequest({ action: 'requestTransmit', data: { _id: targetUid } })
+  requestTransmit: (targetUid) => sendRequest({ action: 'requestTransmit', data: { _id: targetUid } }),
+  updateTransferPort: port => sendRequest({ action: 'updateTransferPort', data: { port } })
 }

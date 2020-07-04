@@ -39,7 +39,7 @@
         </el-input>
       </el-form-item>
       <el-form-item label="文件大小">
-        <el-input v-model="form.size" disabled></el-input>
+        <el-input :value="getReadableFileSizeString(form.size)" disabled></el-input>
       </el-form-item>
       <el-form-item label="文件SHA1">
         <el-input v-model="form.sha1" disabled></el-input>
@@ -61,7 +61,7 @@
           mode: '0',
           deadline: '',
           filePath: '',
-          size: '',
+          size: 0,
           sha1: ''
         }
       }
@@ -72,6 +72,15 @@
       })
     },
     methods: {
+      getReadableFileSizeString: function (fileSizeInBytes) {
+        let i = -1
+        const byteUnits = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
+        do {
+          fileSizeInBytes = fileSizeInBytes / 1024
+          i++
+        } while (fileSizeInBytes > 1024)
+        return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i]
+      },
       requestFriendList () {
         ipcRenderer.once('friendListRequested', (event, packet) => {
           this.$store.dispatch('updateFriendList', { friends: packet.data.friends })
@@ -124,11 +133,14 @@
         }
         // 中转方式 先请求Transmit 再调用P2P进行传输
         if (this.form.mode === '1') {
+          console.log('Transmit request')
           ipcRenderer.send('requestTransmit', { targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
-          this.this.$message.success('中转请求已发送')
+          this.$message.success('中转请求已发送')
           this.$emit('transfer-sent')
+          return
         }
         if (this.form.mode === '0') {
+          console.log('P2P request')
           ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
           this.$message.success('发送成功')
           this.$emit('transfer-sent')
