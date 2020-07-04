@@ -62,7 +62,7 @@
                 请求时间：{{ new Date(transfer.requestTime).toLocaleString() }}
               </template>
             </span><br>
-            <span style="font-size: 14px">来自：{{ transfer.from }}</span>
+            <span style="font-size: 14px">{{ transfer.isDownload ? '来自：' : '发往：' }}{{ transfer.from }}</span>
           </div>
         </div>
       </el-col>

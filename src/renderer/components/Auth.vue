@@ -108,7 +108,6 @@
           }
         })
         ipcRenderer.send('login', { username: this.form.username, password: this.form.password, transferPort: this.$store.state.system.transferPort })
-        ipcRenderer.on('fileRequest', () => { this.$messageQueue.info('收到P2P传送请求') })
       },
       register () {
         ipcRenderer.once('registered', (event, packet) => {

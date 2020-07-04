@@ -65,6 +65,11 @@ app.on('activate', () => {
 
 registerIpc()
 
+process.on('unhandledRejection', function (promise, reason) {
+  console.log(promise)
+  console.log(reason)
+})
+
 /**
  * Auto Updater
  *

@@ -23,6 +23,8 @@ new Vue({
   template: '<App/>'
 }).$mount('#app')
 
-ipcRenderer.on('message', (event, { title, message }) => {
+store.dispatch('failAllCurrent')
+
+ipcRenderer.on('message', (event, message) => {
   ElementUI.Notification(message)
 })

@@ -1,10 +1,13 @@
 import status from '../../../client/status'
+import { logger } from '../../../logger'
 
 const state = {
   transfers: [],
   _id: 1,
   active: 0
 }
+
+const current = [status.transfer.TRANSFERRING, status.transfer.REQUEST, status.transfer.PENDING, status.transfer.CONNECTING]
 
 const mutations = {
   getId (state) {
@@ -13,10 +16,10 @@ const mutations = {
     return id
   },
   createTransfer (state, transferTask) {
-    state.transfers.push(transferTask)
-    state.transfers.sort((a, b) => {
-      return new Date(a.requestTime) < new Date(b.requestTime)
-    })
+    state.transfers.unshift(transferTask)
+    // state.transfers = state.transfers.sort((a, b) => {
+    //   return new Date(a.requestTime) < new Date(b.requestTime)
+    // })
   },
   removeTransfer (state, { _id }) {
     state.transfers = state.transfers.filter(transfer => transfer._id !== _id)
@@ -74,7 +77,7 @@ const mutations = {
   },
   finishTransfer (state, { _id }) {
     state.transfers = state.transfers.map(transfer => {
-      if (transfer._id === _id && transfer.status === status.transfer.TRANSFERRING) {
+      if (transfer._id === _id && current.indexOf(transfer.status) !== -1) {
         return {
           ...transfer,
           status: status.transfer.FINISHED,
@@ -86,7 +89,7 @@ const mutations = {
   },
   failTransfer (state, { _id }) {
     state.transfers = state.transfers.map(transfer => {
-      if (transfer._id === _id && transfer.status === status.transfer.TRANSFERRING) {
+      if (transfer._id === _id && current.indexOf(transfer.status) !== -1) {
         return {
           ...transfer,
           status: status.transfer.FAILED,
@@ -98,7 +101,7 @@ const mutations = {
   },
   cancelTransfer (state, { _id }) {
     state.transfers = state.transfers.map(transfer => {
-      if (transfer._id === _id && transfer.status === status.transfer.TRANSFERRING) {
+      if (transfer._id === _id && current.indexOf(transfer.status) !== -1) {
         return {
           ...transfer,
           status: status.transfer.CANCELLED,
@@ -157,6 +160,14 @@ const actions = {
   },
   rejectTransfer ({ commit }, { _id }) {
     commit('rejectTransfer', { _id })
+  },
+  failAllCurrent ({ state, commit }) {
+    logger.debug('fail current running tasks')
+    state.transfers.forEach(transfer => {
+      if (current.indexOf(transfer.status) !== -1) {
+        commit('failTransfer', { _id: transfer._id })
+      }
+    })
   },
   removeAllTransfers ({ commit }) {
     commit('removeAllTransfers')

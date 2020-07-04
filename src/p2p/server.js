@@ -104,7 +104,7 @@ export async function onFileRequest (data, socket, mode) {
     sha1: data.fileInfo.sha1,
     size: data.fileInfo.size,
     filename: data.fileInfo.filename,
-    from: `${socket.remoteAddress}:${socket.remotePort}`,
+    from: mode ? `${getFriendName(data.userID)} - 服务器中转` : `${socket.remoteAddress}:${socket.remotePort}`,
     isDownload: true,
     requestTime: new Date().toISOString(),
     deadline: data.deadline,
@@ -265,4 +265,8 @@ export function processData (data, pdata, callback) {
 export function packData (data, sq) {
   let buf = Buffer.concat([Buffer.from(sq + '\n'), data])
   return Buffer.concat([Buffer.from(buf.length + '\n'), buf])
+}
+
+export function getFriendName (uid) {
+  return store.state.friend.friends.find(friend => friend._id === uid).username
 }

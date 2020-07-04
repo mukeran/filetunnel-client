@@ -2,7 +2,10 @@
   <el-menu mode="horizontal" class="menu" :default-active="active" router>
     <el-menu-item class="menu-logo">FileTunnel</el-menu-item>
     <el-menu-item index="/friend" class="menu-item"><i class="el-icon-user-solid"></i>好友</el-menu-item>
-    <el-menu-item index="/message" class="menu-item"><i class="el-icon-s-order"></i>队列</el-menu-item>
+    <el-menu-item index="/message" class="menu-item">
+      <i class="el-icon-s-order"></i>队列
+      <el-badge :value="currentCount" :hidden="currentCount === 0"></el-badge>
+    </el-menu-item>
     <el-menu-item index="/offlineTransfer" class="menu-item"><i class="el-icon-upload"></i>离线</el-menu-item>
     <el-menu-item index="/settings" class="menu-item"><i class="el-icon-s-tools"></i>设置</el-menu-item>
 
@@ -73,7 +76,17 @@
         sessionId: state => state.user.sessionId,
         username: state => state.user.username,
         friendRequestLength: state => state.friend.friendRequests.length
-      })
+      }),
+      currentCount () {
+        let count = 0
+        const current = [status.transfer.TRANSFERRING, status.transfer.REQUEST, status.transfer.PENDING, status.transfer.CONNECTING]
+        this.$store.state.transfer.transfers.forEach(transfer => {
+          if (current.indexOf(transfer.status) !== -1) {
+            count = count + 1
+          }
+        })
+        return count
+      }
     },
     methods: {
       logout () {
