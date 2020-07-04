@@ -75,11 +75,11 @@ function processData (data) {
 /**
  * Package packet into payload
  * @param {Object} packet Packet to send
- * @returns {string} Packaged payload
+ * @returns {Buffer} Packaged payload
  */
 function createPayload (packet) {
-  const data = JSON.stringify(packet)
-  return data.length + '\n' + data // Add data.length info
+  const data = Buffer.from(JSON.stringify(packet))
+  return Buffer.concat([Buffer.from(data.length.toString()), Buffer.from('\n'), data]) // Add data.length info
 }
 
 let aliveTimeout = null
