@@ -51,7 +51,7 @@ function processData (data) {
   } else if (typeof packet.sq !== 'undefined') {
     /* Undefined request indicates that the packet is a response */
     const cb = callback.get(packet.sq) // Get resolve callback from pool
-    if (typeof callback !== 'undefined') {
+    if (typeof cb !== 'undefined') {
       callback.del(packet.sq) // Delete callback when succeeded
       cb(packet) // Call callback
       // logger.info(`Received packet ${packet.sq} response`) // RESTORE

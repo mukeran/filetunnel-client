@@ -8,6 +8,7 @@ import Settings from '../components/Settings'
 import SettingsUserSecurity from '../components/Settings/User/Security'
 import SettingsUserPrivacy from '../components/Settings/User/Privacy'
 import SettingsTransferUniversal from '../components/Settings/Transfer/Universal'
+import OfflineTransferList from '../components/OfflineTransferList'
 
 Vue.use(Router)
 
@@ -27,6 +28,11 @@ export default new Router({
           path: '/message',
           name: 'MessageList',
           component: MessageList
+        },
+        {
+          path: '/offlineTransfer',
+          name: 'OfflineTransferList',
+          component: OfflineTransferList
         },
         {
           path: '/settings',

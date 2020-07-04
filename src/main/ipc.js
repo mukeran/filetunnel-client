@@ -9,6 +9,8 @@ import { send } from '../p2p/client'
 import { startServer, stopServer } from '../p2p/server'
 import store from '../renderer/store'
 import status from '../client/status'
+import { requestOfflineTransfer } from '../offline/sender'
+import { acceptOfflineTransfer } from '../offline/receiver'
 
 const channels = {
   connectServer: () => connectServer(),
@@ -107,6 +109,38 @@ const channels = {
     send(ip, port, myUid, targetUid, deadline, filePath, size, sha1).catch(err => {
       logger.error(err)
     })
+  },
+  requestOfflineTransfer: (event, { userId, path, size, sha1, deadline }) => {
+    requestOfflineTransfer(userId, path, size, sha1, deadline)
+      .then(_id => {
+        event.sender.send('offlineTransferRequested', { _id })
+      })
+      .catch(err => {
+        logger.error(err)
+      })
+  },
+  queryOfflineTransfers: (event) => {
+    request.queryOfflineTransfers()
+      .then(packet => {
+        event.sender.send('offlineTransfersQueried', packet)
+      })
+  },
+  answerOfflineTransfer: (event, { _id, operation, fromUserId, filename, filePath, size, sha1, encryptedKey }) => {
+    if (operation === 'accept') {
+      acceptOfflineTransfer(_id, fromUserId, filename, filePath, size, sha1, encryptedKey)
+        .then(() => {
+          event.sender.send('offlineTransferAnswered')
+        })
+        .catch(err => {
+          logger.error(err)
+          event.sender.send('offlineTransferAnswered', err)
+        })
+    } else {
+      request.answerOfflineTransfer(_id, operation)
+        .then(packet => {
+          event.sender.send('offlineTransferAnswered', packet)
+        })
+    }
   }
 }
 

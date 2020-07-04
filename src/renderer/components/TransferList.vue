@@ -13,7 +13,7 @@ import { mapState } from 'vuex'
     name: 'TransferList',
     components: { Transfer },
     mounted () {
-      document.title = '传输列表 - FileTunnel'
+      document.title = '传输队列 - FileTunnel'
     },
     computed: {
       ...mapState({

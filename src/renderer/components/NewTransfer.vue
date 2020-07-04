@@ -1,5 +1,5 @@
 <template>
-  <div style="text-align: center">
+  <div>
     <el-form
       :model="form"
       label-width="100px"
@@ -126,6 +126,18 @@
           ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
           this.$message.success('发送成功')
           this.$emit('transfer-sent')
+        } else if (this.form.mode === '2') {
+          ipcRenderer.once('offlineTransferRequested', (event, { _id }) => {
+            this.$message.info('离线传输请求已完成，请等待文件处理完成')
+            this.$emit('transfer-sent')
+          })
+          ipcRenderer.send('requestOfflineTransfer', {
+            userId: this.form.target,
+            path: this.form.filePath,
+            size: this.form.size,
+            sha1: this.form.sha1,
+            deadline: this.form.deadline
+          })
         }
       }
     }

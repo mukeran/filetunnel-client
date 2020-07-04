@@ -59,8 +59,7 @@ export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath
   })
 
   let sq = parseInt(randomBytes(4).toString('hex'), 16)
-  let sig = signString(sq + '\n' + JSON.stringify(data), privateKey)
-  data.signature = sig
+  data.signature = signString(sq + '\n' + JSON.stringify(data), privateKey)
   let client = createConnection(port, ip)
   client.on('error', (err) => {
     store.dispatch('failTransfer', { _id })

@@ -1,5 +1,3 @@
-import { logger } from '../logger'
-
 /**
  * encrypt related functions
  */
@@ -71,7 +69,6 @@ export function verifyString (message, sign, publicKey) {
 }
 
 export function encryptKey (key, publicKey) {
-  logger.debug()
   return publicEncrypt(publicKey, key).toString('base64')
 }
 

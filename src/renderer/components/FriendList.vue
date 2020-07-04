@@ -75,6 +75,15 @@
       >
         <NewTransfer @transfer-sent="isNewTransferDialogVisible = false"/>
       </el-dialog>
+      <el-dialog
+        title="正在处理离线传输文件"
+        :visible="isOfflineTransferDataProgressVisible"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        :show-close="false"
+      >
+        <OfflineTransferDataProgress/>
+      </el-dialog>
     </template>
   </div>
 </template>
@@ -85,9 +94,10 @@
   import status from '../../client/status'
   import AddFriend from './AddFriend'
   import NewTransfer from './NewTransfer'
+  import OfflineTransferDataProgress from './OfflineTransferDataProgress'
   export default {
     name: 'FriendList',
-    components: { AddFriend, NewTransfer },
+    components: { AddFriend, NewTransfer, OfflineTransferDataProgress },
     mounted () {
       document.title = '好友列表 - FileTunnel'
       if (this.sessionId !== null && this.connectionStatus === status.connection.CONNECTED) {
@@ -138,7 +148,8 @@
       ...mapState({
         sessionId: state => state.user.sessionId,
         connectionStatus: state => state.system.connectionStatus,
-        friends: state => state.friend.friends
+        friends: state => state.friend.friends,
+        isOfflineTransferDataProgressVisible: state => state.offlineTransfer.isOfflineTransferDataProgressVisible
       })
     }
   }
