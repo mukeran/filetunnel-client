@@ -4,7 +4,7 @@
 
 const { getProgress } = require('./streams')
 const { logger } = require('../logger')
-const { createServer, createConnection } = require('net')
+const { createServer } = require('net')
 const { createWriteStream } = require('fs')
 const { createDecipheriv } = require('crypto')
 const { decryptString, encryptString, cipherAlgorithm, decryptKey, verifyString } = require('./encrypt')
@@ -57,23 +57,6 @@ export function startServer () {
 }
 
 /**
- * start a server on connect()
- * @param {String} ip addr to connect
- * @param {Number} port port to connect
- */
-export function serverConnect (ip, port) {
-  let socket = createConnection(port, ip)
-  let buffer = Buffer.alloc(0) // Data buffer per connection socket
-  let state = { socket, buffer }
-  socket.on('error', (err) => { logger.error(err) })
-  logger.info(`Started P2P server on connection: ${socket.remoteAddress}:${socket.remotePort}`)
-  socket.on('data', (data) => processData(data, state, onFileRequest))
-  socket.on('close', () => {
-    logger.info(`Connection from ${socket.remoteAddress}:${socket.remotePort} closed`)
-  })
-}
-
-/**
  * stops started P2P server
  */
 export function stopServer () {
@@ -88,7 +71,7 @@ export function stopServer () {
  * @param {Object} data the request received
  * @param {Socket} socket
  */
-async function onFileRequest (data, socket) {
+export async function onFileRequest (data, socket) {
   let sig = data.signature
   delete data.signature
   data.verify = JSON.stringify(data)

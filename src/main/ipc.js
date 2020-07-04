@@ -11,6 +11,9 @@ import store from '../renderer/store'
 import status from '../client/status'
 import { requestOfflineTransfer } from '../offline/sender'
 import { acceptOfflineTransfer } from '../offline/receiver'
+import { connect } from '../p2p/transmit'
+import { createConnection } from 'net'
+import config from '../config'
 
 const channels = {
   connectServer: () => connectServer(),
@@ -18,6 +21,30 @@ const channels = {
     request.login(username, password, transferPort)
       .then((packet) => {
         event.sender.send('loggedIn', packet)
+      })
+  },
+  /* 中转传输请求 */
+  requestTransmit: (event, {targetUid, deadline, filePath, size, sha1}) => {
+    request.requestTransmit(targetUid)
+      .then((packet) => {
+        event.sender.send('Transmit approved', packet)
+        const transmitId = packet.data._id
+        let socket = createConnection(config.HOST, config.TRANSFER_PORT)
+        socket.on('error', (err) => {
+          // TODO 中转失败
+          logger.error(err)
+        })
+        if (transmitId === '') {
+          logger.error('Transmit request without login')
+        }
+        socket.fileInfo = { deadline, filePath, size, sha1 }
+        connect(socket, transmitId, targetUid)
+          .then((packet) => {
+          // 中转发送成功
+          })
+          .catch((err) => {
+            logger.error(err)
+          })
       })
   },
   register: (event, { username, password, publicKey }) => {
