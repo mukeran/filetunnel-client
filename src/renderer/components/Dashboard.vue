@@ -14,7 +14,7 @@
       title="登录/注册"
       :visible.sync="isLoginDialogVisible"
     >
-      <Auth :show-title="false" @logged-in="isLoginDialogVisible = false"/>
+      <Auth :show-title="false" @logged-in="refreshPage(); isLoginDialogVisible = false"/>
     </el-dialog>
   </el-container>
 </template>
@@ -44,12 +44,18 @@
       }
     },
     methods: {
+      refreshPage () {
+        this.refreshFriendList()
+        if (this.$route.name === 'OfflineTransferList') {
+          this.$refs.main.queryOfflineTransfers()
+        }
+      },
       resumeSession () {
         if (this.sessionId !== null) {
-          this.$message.info('正在尝试恢复会话...')
+          this.$messageQueue.info('正在尝试恢复会话...')
           ipcRenderer.once('sessionResumed', () => {
-            this.$message.success('会话已恢复')
-            this.refreshFriendList()
+            this.$messageQueue.success('会话已恢复')
+            this.refreshPage()
           })
           ipcRenderer.send('resumeSession')
         }
@@ -69,10 +75,10 @@
       },
       connectionStatus (newStatus) {
         if (newStatus === status.connection.CONNECTED) {
-          this.$message.success('服务器已连接')
+          this.$messageQueue.success('服务器已连接')
           this.resumeSession()
         } else if (newStatus === status.connection.DISCONNECTED) {
-          this.$message.error('服务器连接已断开')
+          this.$messageQueue.error('服务器连接已断开')
         }
       }
     },

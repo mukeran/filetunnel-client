@@ -121,6 +121,9 @@ const mutations = {
       }
       return transfer
     })
+  },
+  removeAllTransfers (state) {
+    state.transfers = []
   }
 }
 
@@ -165,6 +168,9 @@ const actions = {
         commit('failTransfer', { _id: transfer._id })
       }
     })
+  },
+  removeAllTransfers ({ commit }) {
+    commit('removeAllTransfers')
   }
 }
 

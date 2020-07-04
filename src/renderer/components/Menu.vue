@@ -98,12 +98,13 @@
               sessionId: null
             })
             if (packet.status === status.OK) {
-              this.$message.success('已成功登出')
+              this.$messageQueue.success('已成功登出')
+              this.$store.dispatch('clearSession')
             } else {
-              this.$message.error('会话不存在')
+              this.$messageQueue.error('会话不存在')
             }
           } else {
-            this.$message.error('登出操作失败，未知错误')
+            this.$messageQueue.error('登出操作失败，未知错误')
           }
         })
         ipcRenderer.send('logout')

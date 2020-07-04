@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div style="text-align: center">
     <el-form
       :model="form"
       label-width="100px"
       size="medium"
     >
       <el-form-item label="发送对象">
-        <el-select v-model="form.target" style="width: 100%">
+        <el-select v-model="_target" style="width: 100%">
           <el-option
             v-for="friend in friends"
             :key="friend._id"
@@ -54,10 +54,12 @@
   import { mapState } from 'vuex'
   export default {
     name: 'NewTransfer',
+    props: {
+      target: String
+    },
     data () {
       return {
         form: {
-          target: '',
           mode: '0',
           deadline: '',
           filePath: '',
@@ -67,6 +69,14 @@
       }
     },
     computed: {
+      _target: {
+        get () {
+          return this.target
+        },
+        set (val) {
+          this.$emit('update:target', val)
+        }
+      },
       ...mapState({
         friends: state => state.friend.friends
       })
@@ -114,13 +124,13 @@
       },
       newTransfer () {
         if (this.form.sha1 === '正在计算SHA1' || this.form.sha1 === '' || this.form.sha1 === '文件信息读取失败') {
-          this.$message.error('SHA1计算中或者计算错误，请重新选择文件')
+          this.$messageQueue.error('SHA1计算中或者计算错误，请重新选择文件')
           return
         }
         let current
         let friends = this.friends
         for (let i = 0; i < friends.length; i++) {
-          if (friends[i]._id === this.form.target) {
+          if (friends[i]._id === this._target) {
             current = friends[i]
             break
           }
@@ -128,29 +138,29 @@
         console.log(current)
         // TODO my.isNAT
         if (current.isNAT && this.form.mode === '0') {
-          this.$message.error('目标在NAT内, 不能P2P传输，请选择中转方式')
+          this.$messageQueue.error('目标在NAT内, 不能P2P传输，请选择中转方式')
           return
         }
         // 中转方式 先请求Transmit 再调用P2P进行传输
         if (this.form.mode === '1') {
           console.log('Transmit request')
           ipcRenderer.send('requestTransmit', { targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
-          this.$message.success('中转请求已发送')
+          this.$messageQueue.success('中转请求已发送')
           this.$emit('transfer-sent')
           return
         }
         if (this.form.mode === '0') {
           console.log('P2P request')
           ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
-          this.$message.success('发送成功')
+          this.$messageQueue.success('发送成功')
           this.$emit('transfer-sent')
         } else if (this.form.mode === '2') {
           ipcRenderer.once('offlineTransferRequested', (event, { _id }) => {
-            this.$message.info('离线传输请求已完成，请等待文件处理完成')
+            this.$messageQueue.info('离线传输请求已完成，请等待文件处理完成')
             this.$emit('transfer-sent')
           })
           ipcRenderer.send('requestOfflineTransfer', {
-            userId: this.form.target,
+            userId: this._target,
             path: this.form.filePath,
             size: this.form.size,
             sha1: this.form.sha1,

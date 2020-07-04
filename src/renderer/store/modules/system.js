@@ -55,6 +55,11 @@ const actions = {
   },
   updateEnableP2PTransfer ({ commit }, { enableP2PTransfer }) {
     commit('updateEnableP2PTransfer', { enableP2PTransfer })
+  },
+  clearSession ({ dispatch }) {
+    dispatch('updateFriendList', { friends: [] })
+    dispatch('updateFriendRequests', { friendRequests: [] })
+    dispatch('updateOfflineTransfers', { offlineTransfers: [] })
   }
 }
 

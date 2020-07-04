@@ -100,38 +100,37 @@
               privateKeyPath: this.form.privateKeyPath
             })
             this.$emit('logged-in')
-            this.$message.success(`${packet.data.username} 欢迎登录`)
+            this.$messageQueue.success(`${packet.data.username} 欢迎登录`)
           } else if (packet.status === status.user.WRONG_USERNAME_OR_PASSWORD) {
-            this.$message.error('用户名或密码错误')
+            this.$messageQueue.error('用户名或密码错误')
           } else {
-            this.$message.error('未知错误')
+            this.$messageQueue.error('未知错误')
           }
         })
         ipcRenderer.send('login', { username: this.form.username, password: this.form.password, transferPort: this.$store.state.system.transferPort })
-        // ipcRenderer.on('fileRequest', () => { this.$message.info('收到P2P传送请求') })
       },
       register () {
         ipcRenderer.once('registered', (event, packet) => {
           if (packet.status === status.OK) {
-            this.$message.success('注册成功')
+            this.$messageQueue.success('注册成功')
             this.isLoginMode = true
           } else if (packet.status === status.user.DUPLICATED_USERNAME) {
-            this.$message.error('用户名已经被使用')
+            this.$messageQueue.error('用户名已经被使用')
           } else {
-            this.$message.error('注册失败')
+            this.$messageQueue.error('注册失败')
           }
         })
         if (this.form.publicKey === '') {
-          this.$message.error('请先生成公私钥对')
+          this.$messageQueue.error('请先生成公私钥对')
           return
         }
         const fs = remote.require('fs')
         fs.writeFile(this.form.privateKeySavePath, this.form.privateKey, (err) => {
           if (err) {
-            this.$message.error('私钥保存失败')
+            this.$messageQueue.error('私钥保存失败')
             return
           }
-          this.$message.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
+          this.$messageQueue.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
           if (this.form.password === this.form.repeatPassword) {
             ipcRenderer.send('register', {
               username: this.form.username,
@@ -139,7 +138,7 @@
               publicKey: this.form.publicKey
             })
           } else {
-            this.$message.error('两次密码不一致')
+            this.$messageQueue.error('两次密码不一致')
           }
         })
       },

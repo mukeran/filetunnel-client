@@ -6,7 +6,7 @@
     <Entry type="switch" v-model="enableEncryption" disabled>
       <template slot="description">是否启用 AES 加密</template>
     </Entry>
-    <Entry type="switch" v-model="acceptOfflineTransfer">
+    <Entry type="switch" v-model="acceptOfflineTransfer" disabled>
       <template slot="description">是否接受离线传输</template>
     </Entry>
     <Entry type="switch" v-model="enableP2PTransfer">
