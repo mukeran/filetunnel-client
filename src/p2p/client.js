@@ -46,7 +46,6 @@ export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath
   let pFile = getFileInfo(filePath).catch(err => {
     store.dispatch('failTransfer', { _id })
     logger.error(err)
-    throw err
   })
 
   let key = Buffer.concat([randomAESKey(), randomBytes(16)])
@@ -64,7 +63,6 @@ export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath
   client.on('error', (err) => {
     store.dispatch('failTransfer', { _id })
     logger.error(err)
-    throw err
   })
   let sData = packData(Buffer.from(JSON.stringify(data)), sq)
   data.sq = sq
@@ -125,7 +123,6 @@ export async function sendBySocket (client, _id, uid, targetUid, deadline, fileP
   client.on('error', (err) => {
     store.dispatch('failTransfer', { _id })
     logger.error(err)
-    throw err
   })
   logger.debug(data)
   const sData = packData(Buffer.from(JSON.stringify(data)), sq)
@@ -170,7 +167,6 @@ async function onFileResponse (data, socket) {
   readStream.on('error', (err) => {
     logger.error(err)
     store.dispatch('failTransfer', { _id: socket._id })
-    throw err
   })
   let cipher = createCipheriv(cipherAlgorithm, socket.fData.key.slice(0, 32), socket.fData.key.slice(32))
   let gzip = createGzip()

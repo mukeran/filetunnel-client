@@ -120,6 +120,7 @@
     },
     methods: {
       getReadableFileSizeString: function (fileSizeInBytes) {
+        if (fileSizeInBytes === 0) return ''
         let i = -1
         const byteUnits = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
         do {

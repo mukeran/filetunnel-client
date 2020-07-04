@@ -5,6 +5,7 @@ export default {
   OK: 0,
   UNKNOWN_ERROR: -1,
   ACCESS_DENIED: -2,
+  NOT_FOUND: -3,
   session: {
     NO_SUCH_SESSION: 1
   },

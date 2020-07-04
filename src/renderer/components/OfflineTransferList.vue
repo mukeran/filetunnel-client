@@ -15,10 +15,9 @@
             prop="filename"
             label="文件名"
           ></el-table-column>
-          <el-table-column
-            prop="size"
-            label="大小"
-          ></el-table-column>
+          <el-table-column label="大小">
+            <template slot-scope="scope">{{ getReadableFileSizeString(scope.row.size) }}</template>
+          </el-table-column>
           <el-table-column
             prop="sha1"
             label="SHA1"
@@ -136,6 +135,16 @@
       }
     },
     methods: {
+      getReadableFileSizeString: function (fileSizeInBytes) {
+        if (fileSizeInBytes === 0) return ''
+        let i = -1
+        const byteUnits = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
+        do {
+          fileSizeInBytes = fileSizeInBytes / 1024
+          i++
+        } while (fileSizeInBytes > 1024)
+        return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i]
+      },
       queryOfflineTransfers () {
         this.isLoading = true
         ipcRenderer.once('offlineTransfersQueried', (event, packet) => {
@@ -145,25 +154,44 @@
         ipcRenderer.send('queryOfflineTransfers')
       },
       download (offlineTransfer) {
-        remote.dialog.showSaveDialog({
-          title: '选择保存路径',
-          defaultPath: offlineTransfer.filename
-        }, filePath => {
-          if (typeof filePath === 'undefined') return
-          ipcRenderer.once('offlineTransferAnswered', (event, err) => {
-            if (err) {
-              this.$messageQueue.error('请求接收离线文件失败')
-            } else {
-              this.$messageQueue.success('请求接收离线文件成功，请在队列中查看传输进度')
-              this.$store.dispatch('setOfflineTransferAccepted', offlineTransfer._id)
-            }
-          })
-          ipcRenderer.send('answerOfflineTransfer', {
-            ...offlineTransfer,
-            operation: 'accept',
-            filePath
+        this.$messageQueue.info(`正在验证文件 ${offlineTransfer.filename} 的签名，请稍候...`)
+        ipcRenderer.once('signatureValidated', result => {
+          if (!result) {
+            this.$messageQueue.error(`文件 ${offlineTransfer.filename} 签名验证失败`)
+            ipcRenderer.send('answerOfflineTransfer', {
+              _id: offlineTransfer._id,
+              operation: 'invalid_sign'
+            })
+            this.$store.dispatch('removeOfflineTransfer', offlineTransfer._id)
+            return
+          }
+          remote.dialog.showSaveDialog({
+            title: '选择保存路径',
+            defaultPath: offlineTransfer.filename
+          }, filePath => {
+            if (typeof filePath === 'undefined') return
+            ipcRenderer.once('offlineTransferAnswered', (event, err) => {
+              if (err) {
+                if (typeof err.status !== 'undefined' && err.status === status.NOT_FOUND) {
+                  this.$messageQueue.error('离线文件已过期或者不存在')
+                  this.$store.dispatch('removeOfflineTransfer', offlineTransfer._id)
+                } else {
+                  this.$messageQueue.error('请求接收离线文件失败')
+                }
+              } else {
+                this.$messageQueue.success('请求接收离线文件成功，请在队列中查看传输进度')
+                this.$store.dispatch('setOfflineTransferAccepted', offlineTransfer._id)
+              }
+            })
+            ipcRenderer.send('answerOfflineTransfer', {
+              ...offlineTransfer,
+              operation: 'accept',
+              filePath,
+              fromUsername: offlineTransfer.fromUsername
+            })
           })
         })
+        ipcRenderer.send('validateSignature', offlineTransfer)
       },
       reject (_id) {
         ipcRenderer.once('offlineTransferAnswered', (event, packet) => {

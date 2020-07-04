@@ -49,7 +49,7 @@ async function startOfflineTransferUpload (socket) {
   }))
 }
 
-export function acceptOfflineTransfer (_id, fromUserId, filename, filePath, size, sha1, encryptedKey) {
+export function acceptOfflineTransfer (_id, fromUserId, filename, filePath, size, sha1, encryptedKey, from) {
   return new Promise(async (resolve, reject) => {
     try {
       const packet = await request.answerOfflineTransfer(_id, 'accept')
@@ -62,6 +62,7 @@ export function acceptOfflineTransfer (_id, fromUserId, filename, filePath, size
       let offlineTransfer = {
         _id,
         fromUserId,
+        from: `${from} - 离线传输`,
         filename,
         filePath,
         size,

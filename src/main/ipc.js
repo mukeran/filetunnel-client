@@ -10,7 +10,7 @@ import { startServer, stopServer } from '../p2p/server'
 import store from '../renderer/store'
 import status from '../client/status'
 import { requestOfflineTransfer } from '../offline/sender'
-import { acceptOfflineTransfer } from '../offline/receiver'
+import { acceptOfflineTransfer, validateSignature } from '../offline/receiver'
 import { connect } from '../p2p/transmit'
 import { createConnection } from 'net'
 import config from '../config'
@@ -136,8 +136,8 @@ const channels = {
       logger.error(err)
     })
   },
-  requestOfflineTransfer: (event, { userId, path, size, sha1, deadline }) => {
-    requestOfflineTransfer(userId, path, size, sha1, deadline)
+  requestOfflineTransfer: (event, { userId, path, size, sha1, deadline, toUsername }) => {
+    requestOfflineTransfer(userId, path, size, sha1, deadline, toUsername)
       .then(_id => {
         event.sender.send('offlineTransferRequested', { _id })
       })
@@ -151,9 +151,9 @@ const channels = {
         event.sender.send('offlineTransfersQueried', packet)
       })
   },
-  answerOfflineTransfer: (event, { _id, operation, fromUserId, filename, filePath, size, sha1, encryptedKey }) => {
+  answerOfflineTransfer: (event, { _id, operation, fromUserId, filename, filePath, size, sha1, encryptedKey, fromUsername }) => {
     if (operation === 'accept') {
-      acceptOfflineTransfer(_id, fromUserId, filename, filePath, size, sha1, encryptedKey)
+      acceptOfflineTransfer(_id, fromUserId, filename, filePath, size, sha1, encryptedKey, fromUsername)
         .then(() => {
           event.sender.send('offlineTransferAnswered')
         })
@@ -167,6 +167,16 @@ const channels = {
           event.sender.send('offlineTransferAnswered', packet)
         })
     }
+  },
+  validateSignature: (event, { fromUserId, filename, size, sha1, deadline, encryptedKey, signature }) => {
+    validateSignature(fromUserId, filename, size, sha1, deadline, encryptedKey, signature)
+      .then(result => {
+        event.sender.send('signatureValidated', result)
+      })
+      .catch(err => {
+        logger.error(err)
+        event.sender.send('signatureValidated', false)
+      })
   }
 }
 

@@ -83,6 +83,7 @@
     },
     methods: {
       getReadableFileSizeString: function (fileSizeInBytes) {
+        if (fileSizeInBytes === 0) return ''
         let i = -1
         const byteUnits = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
         do {
@@ -135,37 +136,35 @@
             break
           }
         }
-        console.log(current)
-        // TODO my.isNAT
         if (current.isNAT && this.form.mode === '0') {
           this.$messageQueue.error('目标在NAT内, 不能P2P传输，请选择中转方式')
           return
         }
-        // 中转方式 先请求Transmit 再调用P2P进行传输
-        if (this.form.mode === '1') {
-          console.log('Transmit request')
-          ipcRenderer.send('requestTransmit', { targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
-          this.$messageQueue.success('中转请求已发送')
-          this.$emit('transfer-sent')
-          return
-        }
-        if (this.form.mode === '0') {
-          console.log('P2P request')
-          ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
-          this.$messageQueue.success('发送成功')
-          this.$emit('transfer-sent')
-        } else if (this.form.mode === '2') {
-          ipcRenderer.once('offlineTransferRequested', (event, { _id }) => {
-            this.$messageQueue.info('离线传输请求已完成，请等待文件处理完成')
+        switch (this.form.mode) {
+          case '0':
+            console.log('P2P request')
+            ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
+            this.$messageQueue.success('发送成功')
             this.$emit('transfer-sent')
-          })
-          ipcRenderer.send('requestOfflineTransfer', {
-            userId: this._target,
-            path: this.form.filePath,
-            size: this.form.size,
-            sha1: this.form.sha1,
-            deadline: this.form.deadline
-          })
+            break
+          case '1':
+            ipcRenderer.send('requestTransmit', { targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
+            this.$messageQueue.success('中转请求已发送')
+            this.$emit('transfer-sent')
+            break
+          case '2':
+            ipcRenderer.once('offlineTransferRequested', (event, { _id }) => {
+              this.$messageQueue.info('离线传输请求已完成，请等待文件处理完成')
+              this.$emit('transfer-sent')
+            })
+            ipcRenderer.send('requestOfflineTransfer', {
+              userId: this._target,
+              path: this.form.filePath,
+              size: this.form.size,
+              sha1: this.form.sha1,
+              deadline: this.form.deadline,
+              toUsername: current.username
+            })
         }
       }
     }

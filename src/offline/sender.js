@@ -78,7 +78,7 @@ function processOfflineTransferData (offlineTransfer) {
   })
 }
 
-export function requestOfflineTransfer (userId, path, size, sha1, deadline) {
+export function requestOfflineTransfer (userId, path, size, sha1, deadline, from) {
   return new Promise(async (resolve, reject) => {
     const publicKey = await getPublicKey(userId)
     const privateKey = await getPrivateKey()
@@ -95,7 +95,7 @@ export function requestOfflineTransfer (userId, path, size, sha1, deadline) {
     const packet = await request.requestOfflineTransfer(userId, offlineTransfer.filename, size, sha1, deadline,
       offlineTransfer.encryptedKey, offlineTransfer.signature)
     if (packet.status !== status.OK) {
-      reject(new Error('Failed to requestOfflineTransfer'))
+      reject(packet)
       return
     }
     offlineTransfer = {
@@ -105,6 +105,7 @@ export function requestOfflineTransfer (userId, path, size, sha1, deadline) {
       path,
       isDownload: false,
       toUserId: userId,
+      from: `${from} - 离线传输`,
       requestTime: new Date().toISOString(),
       mode: 2,
       status: status.transfer.CONNECTING
