@@ -6,6 +6,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import App from './App'
 import router from './router'
 import store from './store'
+import { ipcRenderer } from 'electron'
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
@@ -19,3 +20,7 @@ new Vue({
   store,
   template: '<App/>'
 }).$mount('#app')
+
+ipcRenderer.on('message', (event, { title, message }) => {
+  ElementUI.Notification(message)
+})

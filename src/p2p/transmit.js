@@ -18,6 +18,8 @@ import store from '../renderer/store'
 import { logger } from '../logger'
 import { processData, onFileRequest } from './server'
 import { sendBySocket } from './client'
+import { basename } from 'path'
+import status from '../client/status'
 
 /* transmit(socket, uid, targetUid, deadline, filePath, size, sha1) */
 
@@ -28,17 +30,33 @@ export function connect (socket, transmitId, targetUid) {
   callbacks.set(transmitId, async () => {
     let uid = store.state.user._id
     let _id = store.state.transfer._id
+    let tid = store.state.transfer._id
+    await store.dispatch('getId')
+    let filename = basename(socket.fileInfo.filePath)
+    logger.debug(`P2P new transfer list _id ${tid}`)
+    let transferTask = {
+      tid,
+      sha1: socket.fileInfo.sha1,
+      size: socket.fileInfo.size,
+      filename,
+      filePath: socket.fileInfo.filePath,
+      from: 'Transmit',
+      isDownload: false,
+      requestTime: new Date().toISOString(),
+      deadline: socket.fileInfo.deadline,
+      mode: 1,
+      status: status.transfer.PENDING
+    }
+    store.dispatch('createTransfer', transferTask)
     await sendBySocket(socket, _id, uid, targetUid, socket.fileInfo.deadline, socket.fileInfo.filePath, socket.fileInfo.size, socket.fileInfo.sha1)
   })
+  logger.debug('connect registered callback')
+  logger.debug(callbacks)
 }
 
 export function transmitConnect (socket) {
   let buffer = Buffer.alloc(0) // Data buffer per connection socket
-  let state = { socket, buffer }
-  socket.on('error', (err) => { logger.error(err) })
+  let state = { socket, buffer, mode: 1 }
   logger.info(`Started transmit server on connection: ${socket.remoteAddress}:${socket.remotePort}`)
   socket.on('data', (data) => processData(data, state, onFileRequest))
-  socket.on('close', () => {
-    logger.info(`Transmit Connection to ${socket.remoteAddress}:${socket.remotePort} closed`)
-  })
 }

@@ -84,6 +84,22 @@ export async function sendCalcHash (ip, port, deadline, uid, targetUid, filePath
 export async function send (ip, port, uid, targetUid, deadline, filePath, size, sha1) {
   let _id = store.state.transfer._id
   await store.dispatch('getId')
+  let filename = basename(filePath)
+  logger.debug(`P2P new transfer list _id ${_id}`)
+  let transferTask = {
+    _id,
+    sha1,
+    size,
+    filename,
+    filePath,
+    from: `${ip}:${port}`,
+    isDownload: false,
+    requestTime: new Date().toISOString(),
+    deadline,
+    mode: 0,
+    status: status.transfer.PENDING
+  }
+  store.dispatch('createTransfer', transferTask)
   let client = createConnection(port, ip)
   await sendBySocket(client, _id, uid, targetUid, deadline, filePath, size, sha1)
 }

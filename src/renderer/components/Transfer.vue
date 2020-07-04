@@ -126,7 +126,6 @@
           fileSizeInBytes = fileSizeInBytes / 1024
           i++
         } while (fileSizeInBytes > 1024)
-
         return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i]
       },
       handleRequest: function ({ accept }) {
@@ -142,7 +141,6 @@
           if (typeof result === 'undefined') {
             return
           }
-          console.log(result)
           this.$store.dispatch('updatePath', { filePath: result, _id })
           ipcRenderer.send('fileRequest' + _id, { accept, filePath: result })
         })

@@ -29,22 +29,21 @@ const channels = {
       .then((packet) => {
         event.sender.send('Transmit approved', packet)
         const transmitId = packet.data._id
-        let socket = createConnection(config.HOST, config.TRANSFER_PORT)
+        let socket = createConnection(config.server.DATA_PORT, config.server.HOST)
         socket.on('error', (err) => {
-          // TODO 中转失败
+          logger.debug('transmit connection started')
+          logger.error(err)
+        })
+        socket.on('close', (err) => {
+          logger.debug('transmit connection closed')
           logger.error(err)
         })
         if (transmitId === '') {
           logger.error('Transmit request without login')
         }
         socket.fileInfo = { deadline, filePath, size, sha1 }
+        logger.debug('start transmit connection')
         connect(socket, transmitId, targetUid)
-          .then((packet) => {
-          // 中转发送成功
-          })
-          .catch((err) => {
-            logger.error(err)
-          })
       })
   },
   register: (event, { username, password, publicKey }) => {
