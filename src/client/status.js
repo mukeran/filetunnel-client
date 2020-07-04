@@ -12,7 +12,10 @@ export default {
   user: {
     DUPLICATED_USERNAME: 1,
     WRONG_USERNAME_OR_PASSWORD: 2,
-    NO_SUCH_USER: 3
+    NO_SUCH_USER: 3,
+    CANNOT_OPERATE_SELF: 4,
+    FRIEND_REQUEST_EXISTED: 5,
+    ALREADY_FRIEND: 6
   },
   transfer: {
     REQUEST: 1,
