@@ -31,7 +31,7 @@
             <template v-if="scope.row.isOnline">
               <span>在线</span>&nbsp;
               <el-tooltip effect="dark" content="对方为 NAT 状态时，无法进行 P2P 传输" placement="top" v-if="scope.row.isNAT">
-                <el-tag type="danger" v-if="scope.row.isNAT">NAT</el-tag>
+                <el-tag type="danger" size="mini" v-if="scope.row.isNAT">NAT</el-tag>
               </el-tooltip>
               <span>{{ `${scope.row.ip}:${scope.row.port}` }}</span>
             </template>
