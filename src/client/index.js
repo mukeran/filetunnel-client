@@ -10,6 +10,7 @@ import request from './request'
 import status from './status'
 
 let buffer = Buffer.alloc(0) // Data buffer
+let isProcessingData = false
 /**
  * Process received data from server
  * @param {Buffer} data Data received
@@ -18,50 +19,57 @@ function processData (data) {
   logger.debug(`Receiving data ${data}`)
   /* Concat to existed buffer */
   buffer = Buffer.concat([buffer, data])
-  /* Find the end symbol of size (LF) */
-  let pos = buffer.indexOf('\n')
-  if (pos === -1) {
-    logger.info('Received incomplete payload')
-    return
-  }
-  /* Get the size of payload */
-  let size = parseInt(buffer.slice(0, pos).toString())
-  if (size <= 1) {
-    logger.error(`Wrong payload size: ${size}`)
-    return
-  }
-  /* Check if received incomplete payload */
-  if (buffer.length - pos - 1 < size) {
-    logger.info('Received incomplete payload')
-    return
-  }
-  buffer = buffer.slice(pos + 1)
-  /* Convert JSON to Object. Detect parse error */
-  let packet
-  try {
-    packet = JSON.parse(buffer.slice(0, size).toString())
-  } catch (e) {
-    logger.error(`Invalid JSON format`)
-  } finally {
-    buffer = buffer.slice(size)
-  }
-  if (typeof packet.action !== 'undefined') {
-    /* Do client request when request exists in packet */
-    dispatch(packet)
-  } else if (typeof packet.sq !== 'undefined') {
-    /* Undefined request indicates that the packet is a response */
-    const cb = callback.get(packet.sq) // Get resolve callback from pool
-    if (typeof cb !== 'undefined') {
-      callback.del(packet.sq) // Delete callback when succeeded
-      logger.info(`Received packet ${packet.sq} response`)
-      cb(packet) // Call callback
-    } else {
-      /* If there's no recorded callback, it is timeout or fake */
-      logger.info(`Received invalid packet ${packet.sq}`)
+  if (isProcessingData) return
+  while (true) {
+    isProcessingData = true
+    /* Find the end symbol of size (LF) */
+    let pos = buffer.indexOf('\n')
+    if (pos === -1) {
+      logger.info('No next payload')
+      break
     }
-  } else {
-    logger.error('Invalid packet format')
+    /* Get the size of payload */
+    let size = parseInt(buffer.slice(0, pos).toString())
+    if (size <= 1) {
+      logger.error(`Wrong payload size: ${size}`)
+      break
+    }
+    /* Check if received incomplete payload */
+    if (buffer.length - pos - 1 < size) {
+      logger.info('Received incomplete payload')
+      break
+    }
+    buffer = buffer.slice(pos + 1)
+    const tmp = buffer.slice(0, size).toString()
+    buffer = buffer.slice(size)
+    /* Convert JSON to Object. Detect parse error */
+    let packet
+    try {
+      packet = JSON.parse(tmp)
+    } catch (e) {
+      logger.error('Invalid JSON format')
+      break
+    }
+    logger.debug(packet)
+    if (typeof packet.action !== 'undefined') {
+      /* Do client request when request exists in packet */
+      dispatch(packet)
+    } else if (typeof packet.sq !== 'undefined') {
+      /* Undefined request indicates that the packet is a response */
+      const cb = callback.get(packet.sq) // Get resolve callback from pool
+      if (typeof cb !== 'undefined') {
+        callback.del(packet.sq) // Delete callback when succeeded
+        logger.info(`Received packet ${packet.sq} response`)
+        cb(packet) // Call callback
+      } else {
+        /* If there's no recorded callback, it is timeout or fake */
+        logger.info(`Received invalid packet ${packet.sq}`)
+      }
+    } else {
+      logger.error('Invalid packet format')
+    }
   }
+  isProcessingData = false
 }
 
 /**
