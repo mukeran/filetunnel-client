@@ -29,7 +29,7 @@ const channels = {
       .then((packet) => {
         event.sender.send('Transmit approved', packet)
         const transmitId = packet.data._id
-        let socket = createConnection(config.server.DATA_PORT, config.server.HOST)
+        let socket = createConnection(config.server.TRANSFER_PORT, config.server.HOST)
         socket.on('error', (err) => {
           logger.debug('transmit connection started')
           logger.error(err)

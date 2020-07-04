@@ -5,7 +5,7 @@ import { logger } from '../../logger'
 
 export function sendTransmit (packet) {
   const { _id } = packet.data
-  let socket = createConnection(config.server.DATA_PORT, config.server.HOST)
+  let socket = createConnection(config.server.TRANSFER_PORT, config.server.HOST)
   socket.on('error', (err) => { logger.error(err) })
   socket.on('close', () => {
     logger.info(`Transmit Connection for id: ${_id} closed`)

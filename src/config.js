@@ -3,8 +3,7 @@
  */
 export default {
   server: {
-    // HOST: '2409:8a60:121b:9950:dd33:e99:3cb6:8ef3',
-    HOST: '192.168.1.12',
+    HOST: '2409:8a60:121b:9950:1186:9a73:5792:71c3',
     PORT: 10088,
     TRANSFER_PORT: 10089
   },
