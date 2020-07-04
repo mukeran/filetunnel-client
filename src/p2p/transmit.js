@@ -16,7 +16,7 @@
 
 import store from '../renderer/store'
 import { logger } from '../logger'
-import { processData, onFileRequest } from './server'
+import { processData, onFileRequest, getFriendName } from './server'
 import { sendBySocket } from './client'
 import { basename } from 'path'
 import status from '../client/status'
@@ -27,20 +27,20 @@ export let callbacks = new Map()
 
 export function connect (socket, transmitId, targetUid) {
   socket.write('0\n' + transmitId + '\n')
+
   callbacks.set(transmitId, async () => {
     let uid = store.state.user._id
-    let _id = store.state.transfer._id
     let tid = store.state.transfer._id
     await store.dispatch('getId')
     let filename = basename(socket.fileInfo.filePath)
     logger.debug(`P2P new transfer list _id ${tid}`)
     let transferTask = {
-      tid,
+      _id: tid,
       sha1: socket.fileInfo.sha1,
       size: socket.fileInfo.size,
       filename,
       filePath: socket.fileInfo.filePath,
-      from: 'Transmit',
+      from: `${getFriendName(targetUid)} - 服务器中转`,
       isDownload: false,
       requestTime: new Date().toISOString(),
       deadline: socket.fileInfo.deadline,
@@ -48,7 +48,7 @@ export function connect (socket, transmitId, targetUid) {
       status: status.transfer.PENDING
     }
     store.dispatch('createTransfer', transferTask)
-    await sendBySocket(socket, _id, uid, targetUid, socket.fileInfo.deadline, socket.fileInfo.filePath, socket.fileInfo.size, socket.fileInfo.sha1)
+    await sendBySocket(socket, tid, uid, targetUid, socket.fileInfo.deadline, socket.fileInfo.filePath, socket.fileInfo.size, socket.fileInfo.sha1)
   })
   logger.debug('connect registered callback')
   logger.debug(callbacks)

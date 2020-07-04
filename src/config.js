@@ -3,7 +3,7 @@
  */
 export default {
   server: {
-    HOST: '2409:8a60:121b:9950:1186:9a73:5792:71c3',
+    HOST: 'banana.server.mukeran.com',
     PORT: 10088,
     TRANSFER_PORT: 10089
   },
