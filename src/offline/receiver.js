@@ -51,35 +51,39 @@ async function startOfflineTransferUpload (socket) {
 
 export function acceptOfflineTransfer (_id, fromUserId, filename, filePath, size, sha1, encryptedKey) {
   return new Promise(async (resolve, reject) => {
-    const packet = await request.answerOfflineTransfer(_id, 'accept')
-    if (packet.status !== status.OK) {
-      reject(new Error('Failed to answerOfflineTransfer'))
-      return
-    }
-    const privateKey = await getPrivateKey()
-    const key = decryptKey(encryptedKey, privateKey)
-    let offlineTransfer = {
-      _id,
-      fromUserId,
-      filename,
-      filePath,
-      size,
-      sha1,
-      key,
-      isDownload: true,
-      requestTime: new Date().toISOString(),
-      mode: 2,
-      status: status.transfer.CONNECTING
-    }
-    logger.debug(offlineTransfer)
-    await store.dispatch('createTransfer', offlineTransfer)
-    resolve()
-    const socket = net.createConnection(config.server.TRANSFER_PORT, config.server.HOST)
-    socket.offlineTransfer = offlineTransfer
-    socket.on('connect', () => {
-      socket.write(`2\n${packet.data.transferKey}\n`, () => {
-        startOfflineTransferUpload(socket)
+    try {
+      const packet = await request.answerOfflineTransfer(_id, 'accept')
+      if (packet.status !== status.OK) {
+        reject(new Error('Failed to answerOfflineTransfer'))
+        return
+      }
+      const privateKey = await getPrivateKey()
+      const key = decryptKey(encryptedKey, privateKey)
+      let offlineTransfer = {
+        _id,
+        fromUserId,
+        filename,
+        filePath,
+        size,
+        sha1,
+        key,
+        isDownload: true,
+        requestTime: new Date().toISOString(),
+        mode: 2,
+        status: status.transfer.CONNECTING
+      }
+      logger.debug(offlineTransfer)
+      await store.dispatch('createTransfer', offlineTransfer)
+      resolve()
+      const socket = net.createConnection(config.server.TRANSFER_PORT, config.server.HOST)
+      socket.offlineTransfer = offlineTransfer
+      socket.on('connect', () => {
+        socket.write(`2\n${packet.data.transferKey}\n`, () => {
+          startOfflineTransferUpload(socket)
+        })
       })
-    })
+    } catch (err) {
+      reject(err)
+    }
   })
 }

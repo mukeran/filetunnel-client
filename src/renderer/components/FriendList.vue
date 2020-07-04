@@ -1,10 +1,7 @@
 <template>
   <div>
     <template v-if="this.sessionId === null">
-      <div class="notice">
-        <i class="el-icon-info icon"></i>
-        <span class="word">登录后才可获取好友列表</span>
-      </div>
+      <Notice icon="el-icon-info" word="登录后才可获取好友列表"/>
     </template>
     <template v-else>
       <el-button type="primary" size="small" @click="isAddFriendDialogVisible = true">
@@ -57,7 +54,7 @@
             <el-button
               type="primary"
               size="mini"
-              @click="isNewTransferDialogVisible = true"
+              @click="transferTo = scope.row._id; isNewTransferDialogVisible = true"
             ><i class="el-icon-s-promotion"></i>发送</el-button>
             <el-button type="danger" size="mini" @click="deleteFriend(scope.row._id)"><i class="el-icon-delete-solid"></i>删除</el-button>
           </template>
@@ -73,7 +70,7 @@
         title="发送文件"
         :visible.sync="isNewTransferDialogVisible"
       >
-        <NewTransfer @transfer-sent="isNewTransferDialogVisible = false"/>
+        <NewTransfer :target.sync="transferTo" @transfer-sent="isNewTransferDialogVisible = false"/>
       </el-dialog>
       <el-dialog
         title="正在处理离线传输文件"
@@ -95,9 +92,10 @@
   import AddFriend from './AddFriend'
   import NewTransfer from './NewTransfer'
   import OfflineTransferDataProgress from './OfflineTransferDataProgress'
+  import Notice from './Notice'
   export default {
     name: 'FriendList',
-    components: { AddFriend, NewTransfer, OfflineTransferDataProgress },
+    components: { AddFriend, NewTransfer, OfflineTransferDataProgress, Notice },
     mounted () {
       document.title = '好友列表 - FileTunnel'
       if (this.sessionId !== null && this.connectionStatus === status.connection.CONNECTED) {
@@ -110,7 +108,8 @@
       return {
         isNewTransferDialogVisible: false,
         isAddFriendDialogVisible: false,
-        isLoading: true
+        isLoading: true,
+        transferTo: ''
       }
     },
     methods: {
@@ -129,8 +128,9 @@
       deleteFriend (userId) {
         ipcRenderer.once('friendDeleted', (event, packet) => {
           if (packet.status !== status.OK) {
-            this.$message.error(`删除好友 ${userId} 失败`)
+            this.$messageQueue.error(`删除好友 ${userId} 失败`)
           } else {
+            this.$messageQueue.success(`已删除好友 ${userId}`)
             this.requestFriendList()
           }
         })
@@ -156,18 +156,5 @@
 </script>
 
 <style scoped>
-  .notice {
-    text-align: center;
-  }
-  .notice>.icon {
-    display: block;
-    font-size: 100px;
-    color: #909399;
-  }
-  .notice>.word {
-    display: block;
-    margin-top: 15px;
-    font-size: 18px;
-    color: #909399;
-  }
+
 </style>

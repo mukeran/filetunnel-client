@@ -13,37 +13,37 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
-import status from '../../client/status'
-export default {
-  name: 'AddFriend',
-  data () {
-    return {
-      form: {
-        username: ''
-      }
-    }
-  },
-  methods: {
-    addFriend () {
-      if (this.form.username === '') {
-        this.$message.error('请输入用户名')
-        return
-      }
-      ipcRenderer.once('friendRequestSent', (event, packet) => {
-        if (packet.status === status.OK) {
-          this.$message.success('请求发送成功，请等待回应')
-          this.$emit('request-sent')
-        } else if (packet.status === status.user.NO_SUCH_USER) {
-          this.$message.error('没有此用户')
-        } else {
-          this.$message.error('请求发送失败')
+  import { ipcRenderer } from 'electron'
+  import status from '../../client/status'
+  export default {
+    name: 'AddFriend',
+    data () {
+      return {
+        form: {
+          username: ''
         }
-      })
-      ipcRenderer.send('sendFriendRequest', { username: this.form.username })
+      }
+    },
+    methods: {
+      addFriend () {
+        if (this.form.username === '') {
+          this.$messageQueue.error('请输入用户名')
+          return
+        }
+        ipcRenderer.once('friendRequestSent', (event, packet) => {
+          if (packet.status === status.OK) {
+            this.$messageQueue.success('请求发送成功，请等待回应')
+            this.$emit('request-sent')
+          } else if (packet.status === status.user.NO_SUCH_USER) {
+            this.$messageQueue.error('没有此用户')
+          } else {
+            this.$messageQueue.error('请求发送失败')
+          }
+        })
+        ipcRenderer.send('sendFriendRequest', { username: this.form.username })
+      }
     }
   }
-}
 </script>
 
 <style scoped>

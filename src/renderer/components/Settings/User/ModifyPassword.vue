@@ -19,40 +19,40 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
-import status from '../../../../client/status'
-export default {
-  name: 'ModifyPassword',
-  data () {
-    return {
-      form: {
-        oldPassword: '',
-        newPassword: '',
-        repeatNewPassword: ''
-      }
-    }
-  },
-  methods: {
-    modifyPassword () {
-      ipcRenderer.once('passwordChanged', (event, packet) => {
-        if (packet.status === status.OK) {
-          this.$message.success('密码修改成功')
-          this.$emit('password-modified')
-        } else {
-          this.$message.error('密码修改失败')
+  import { ipcRenderer } from 'electron'
+  import status from '../../../../client/status'
+  export default {
+    name: 'ModifyPassword',
+    data () {
+      return {
+        form: {
+          oldPassword: '',
+          newPassword: '',
+          repeatNewPassword: ''
         }
-      })
-      if (this.form.newPassword === this.form.repeatNewPassword) {
-        ipcRenderer.send('changePassword', {
-          password: this.form.oldPassword,
-          newPassword: this.form.newPassword
+      }
+    },
+    methods: {
+      modifyPassword () {
+        ipcRenderer.once('passwordChanged', (event, packet) => {
+          if (packet.status === status.OK) {
+            this.$messageQueue.success('密码修改成功')
+            this.$emit('password-modified')
+          } else {
+            this.$messageQueue.error('密码修改失败')
+          }
         })
-      } else {
-        this.$message.error('两次密码输入不一致')
+        if (this.form.newPassword === this.form.repeatNewPassword) {
+          ipcRenderer.send('changePassword', {
+            password: this.form.oldPassword,
+            newPassword: this.form.newPassword
+          })
+        } else {
+          this.$messageQueue.error('两次密码输入不一致')
+        }
       }
     }
   }
-}
 </script>
 
 <style scoped>

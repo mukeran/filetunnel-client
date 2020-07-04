@@ -9,19 +9,11 @@ const store = require('../renderer/store').default
 const { readFile } = require('fs')
 const { promisify } = require('util')
 
-// let keyCache = new Map()
-// let privateKey
-// let privateKeyPath = ''
-
-async function getPrivateKeyAt (path) {
-  let privateKey
-  if (typeof privateKey === 'undefined') {
-    privateKey = await promisify(readFile)(path)
-  }
-  return privateKey
+function getPrivateKeyAt (path) {
+  return promisify(readFile)(path)
 }
 
-export async function getPrivateKey () {
+export function getPrivateKey () {
   return getPrivateKeyAt(store.state.system.privateKeyPath)
 }
 

@@ -68,22 +68,22 @@
       },
       modifyPublicKey () {
         if (this.form.publicKey === '') {
-          this.$message.error('请先生成公私钥对')
+          this.$messageQueue.error('请先生成公私钥对')
           return
         }
         const fs = remote.require('fs')
         fs.writeFile(this.form.privateKeySavePath, this.form.privateKey, (err) => {
           if (err) {
-            this.$message.error('私钥保存失败')
+            this.$messageQueue.error('私钥保存失败')
             return
           }
-          this.$message.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
+          this.$messageQueue.success(`私钥已经保存至 ${this.form.privateKeySavePath}`)
           ipcRenderer.once('publicKeyChanged', (event, packet) => {
             if (packet.status === status.OK) {
-              this.$message.success('公钥修改成功')
+              this.$messageQueue.success('公钥修改成功')
               this.$emit('public-key-modified')
             } else {
-              this.$message.error('公钥修改失败')
+              this.$messageQueue.error('公钥修改失败')
             }
           })
           ipcRenderer.send('changePublicKey', {

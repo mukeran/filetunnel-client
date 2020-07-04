@@ -29,5 +29,12 @@ export default {
     CONNECTED: 0,
     CONNECTING: 1,
     DISCONNECTED: 2
+  },
+  offlineTransfer: {
+    UPLOADING: 0,
+    PENDING: 1,
+    ACCEPTED: 2,
+    REJECTED: 3,
+    INVALID_SIGN: 4
   }
 }
