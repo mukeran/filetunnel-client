@@ -25,10 +25,8 @@ const channels = {
       }).catch(err => { logger.error(err) })
   },
   /**
- * 中转传输请求
- *  @param {} event
- *  @param {deadline, filePath, size, sha1} data 包含过期时间，文件路径，文件大小和散列值
- */
+   * send transmit request, connect, and wait for transmitReady.
+   */
   requestTransmit: (event, {targetUid, deadline, filePath, size, sha1}) => {
     request.requestTransmit(targetUid)
       .then((packet) => {
@@ -52,43 +50,24 @@ const channels = {
         connect(socket, transmitId, targetUid)
       }).catch(err => { logger.error(err) })
   },
-  /**
- * 注册请求
- *  @param {} event
- *  @param {username, password, publicKey} data 包含用户名，密码，公钥
- */
   register: (event, { username, password, publicKey }) => {
     request.register(username, password, publicKey)
       .then((packet) => {
         event.sender.send('registered', packet)
       }).catch(err => { logger.error(err) })
   },
-  /**
-   * 更改密码
-   * @param {} event
-   * @param {password, newPassword} data 包含旧密码和新密码
-   */
   changePassword: (event, { password, newPassword }) => {
     request.changePassword(password, newPassword)
       .then((packet) => {
         event.sender.send('passwordChanged', packet)
       }).catch(err => { logger.error(err) })
   },
-  /**
-   * 更改公钥
-   * @param {} event
-   * @param {publicKeyd} data 新的公钥
-   */
   changePublicKey: (event, {publicKey}) => {
     request.changePublicKey(publicKey)
       .then((packet) => {
         event.sender.send('publicKeyChanged', packet)
       }).catch(err => { logger.error(err) })
   },
-  /**
-   * 登出
-   * @param {} event
-   */
   logout: (event) => {
     request.logout()
       .then((packet) => {

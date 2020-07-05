@@ -9,10 +9,17 @@ const store = require('../renderer/store').default
 const { readFile } = require('fs')
 const { promisify } = require('util')
 
+/**
+ * read private key file. (generally pem format)
+ * @param {String} path private key file path
+ */
 function getPrivateKeyAt (path) {
   return promisify(readFile)(path)
 }
 
+/**
+ * read private key from the privateKeyPath from vuex store
+ */
 export function getPrivateKey () {
   return getPrivateKeyAt(store.state.system.privateKeyPath)
 }

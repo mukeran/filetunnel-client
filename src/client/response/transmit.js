@@ -5,8 +5,10 @@ import { logger } from '../../logger'
 import { mainWindow } from '../../main'
 
 /**
- * 发送服务器中转文件
- * @param {*} packet 数据
+ * Got transmit request, start a connection to server's transfer port,
+ * and ready to receive P2P transfer request
+ * Rejection is delayed after receiving fileInfo.
+ * @param {Object} packet
  */
 export function sendTransmit (packet) {
   const { _id } = packet.data
@@ -23,7 +25,7 @@ export function sendTransmit (packet) {
   socket.write('0\n' + _id + '\n')
 }
 /**
- * 接收到transmitReady指令，准备开始传输
+ * got transmitReady package, call registered action.
  * @param {} packet
  */
 export function transmitReady (packet) {

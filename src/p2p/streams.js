@@ -4,6 +4,10 @@
 const { Transform } = require('stream')
 const speedometer = require('speedometer')
 
+/**
+ * insert iv before write cipertext
+ * @param {Buffer} iv 16 bytes
+ */
 export function IVInserter (iv) {
   let inserted = false
   let transform = (chunk, encoding, callback) => {

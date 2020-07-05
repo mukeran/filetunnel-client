@@ -30,10 +30,19 @@ export function createKeyPair () {
   })
 }
 
+/**
+ * generate secure random bytes as  AES key
+ * @returns {Buffer} buf 32bytes
+ */
 export function randomAESKey () {
   return randomBytes(32)
 }
 
+/**
+ * generate secure AES key from password
+ * @param {String} passwd
+ * @returns {Buffer} buf 32bytes
+ */
 export function generateAESKey (passwd) {
   return promisify(scrypt)(passwd, salt, 32)
 }
@@ -69,19 +78,37 @@ export function verifyString (message, sign, publicKey) {
   return hash.digest().equals(encrypted)
 }
 
+/**
+ * encrypt AES key with public key
+ * @param {Buffer} key AES key to encrypt
+ * @param {String} publicKey pem format public key
+ * @returns {String} enc base64 format encrypted key
+ */
 export function encryptKey (key, publicKey) {
   return publicEncrypt(publicKey, key).toString('base64')
 }
 
+/**
+ * decrypt encrypted AES key
+ * @param {String} enc encrypted public key base64 format
+ * @param {String} privateKey pem format private key
+ * @returns {Buffer} key 32bytes Buffer
+ */
 export function decryptKey (enc, privateKey) {
   return privateDecrypt(privateKey, Buffer.from(enc, 'base64'))
 }
 
-export function encryptFile (key, pat) {
+/**
+ * encrypt a file with AES key.
+ * using AES-256-CBC, so insert IV in front of encrypted file.
+ * @param {Buffer} key AES key
+ * @param {String} filePath
+ */
+export function encryptFile (key, filePath) {
   return new Promise((resolve, reject) => {
-    let readStream = createReadStream(pat)
+    let readStream = createReadStream(filePath)
     readStream.on('error', (err) => { reject(err) })
-    let writeStream = createWriteStream(path.join(pat + '.enc'))
+    let writeStream = createWriteStream(path.join(filePath + '.enc'))
     writeStream.on('error', (err) => { reject(err) })
     let gzip = createGzip()
     let iv = randomBytes(16)
@@ -97,6 +124,13 @@ export function encryptFile (key, pat) {
   })
 }
 
+/**
+ * unused
+ * encrypt a file with AES key.
+ * @param {Buffer} key encrypted key
+ * @param {String} path encrypted file path
+ * @param {String} dpath path to save decrypted file
+ */
 export async function decryptFile (key, path, dpath) {
   let p = { iv: Buffer.alloc(0) }
   await new Promise((resolve, reject) => {
@@ -124,6 +158,12 @@ export async function decryptFile (key, path, dpath) {
   })
 }
 
+/**
+ * Using CBC, so put iv before ciphertext.
+ * @param {Buffer} key AES-256-CBC key
+ * @param {String} str String to encrypt
+ * @returns {String} enc base64 format
+ */
 export function encryptString (key, str) {
   let iv = randomBytes(16)
   let cipher = createCipheriv(cipherAlgorithm, key, iv)
@@ -131,6 +171,11 @@ export function encryptString (key, str) {
   return encrypted.toString('base64')
 }
 
+/**
+ * decrypt sting using AES-256-CBC, use first 16 bytes as iv
+ * @param {Buffer} key AES-256-CBC key
+ * @param {String} str base64 format ciphertext
+ */
 export function decryptString (key, str) {
   let encrypted = Buffer.from(str, 'base64')
   let decipher = createDecipheriv(cipherAlgorithm, key, encrypted.slice(0, 16))

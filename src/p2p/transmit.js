@@ -23,12 +23,21 @@ import status from '../client/status'
 
 /* transmit(socket, uid, targetUid, deadline, filePath, size, sha1) */
 
-export let callbacks = new Map()
+export let callbacks = new Map() // store async function
 
+/**
+ * transmit id for target
+ * @param {Socket} socket new transfer connection to server
+ * @param {*} transmitId received transmit id
+ * @param {*} targetUid
+ */
 export function connect (socket, transmitId, targetUid) {
   socket.write('0\n' + transmitId + '\n')
 
+  /** register for transmitReady message */
   callbacks.set(transmitId, async () => {
+    /** received transmitReady, and start sending P2P request */
+    /** register transfer task */
     let uid = store.state.user._id
     let tid = store.state.transfer._id
     await store.dispatch('getId')
@@ -44,14 +53,15 @@ export function connect (socket, transmitId, targetUid) {
       isDownload: false,
       requestTime: new Date().toISOString(),
       deadline: socket.fileInfo.deadline,
-      mode: 1,
+      mode: 1, // transmit
       status: status.transfer.PENDING
     }
     store.dispatch('createTransfer', transferTask)
+    /** start P2P request */
     await sendBySocket(socket, tid, uid, targetUid, socket.fileInfo.deadline, socket.fileInfo.filePath, socket.fileInfo.size, socket.fileInfo.sha1)
   })
   logger.debug('connect registered callback')
-  logger.debug(callbacks)
+  // logger.debug(callbacks)
 }
 
 export function transmitConnect (socket) {
