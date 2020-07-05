@@ -11,6 +11,9 @@
 </template>
 
 <script>
+  /**
+   * Friend request list component
+   */
   import { mapState } from 'vuex'
 import { ipcRenderer } from 'electron'
   import status from '../../client/status'

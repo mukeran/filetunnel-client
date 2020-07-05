@@ -50,6 +50,9 @@
 </template>
 
 <script>
+  /**
+   * New transfer component
+   */
   import { remote, ipcRenderer } from 'electron'
   import { mapState } from 'vuex'
   export default {
@@ -145,18 +148,18 @@
           return
         }
         switch (this.form.mode) {
-          case '0':
+          case '0': // P2P mode
             console.log('P2P request')
             ipcRenderer.send('sendFile', { ip: current.ip, port: current.port, myUid: this.$store.state.user._id, targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
             this.$messageQueue.success('发送成功')
             this.$emit('transfer-sent')
             break
-          case '1':
+          case '1': // Online tunnel transmit mode
             ipcRenderer.send('requestTransmit', { targetUid: current._id, deadline: this.form.deadline, filePath: this.form.filePath, size: this.form.size, sha1: this.form.sha1 })
             this.$messageQueue.success('中转请求已发送')
             this.$emit('transfer-sent')
             break
-          case '2':
+          case '2': // Offline transfer mode
             ipcRenderer.once('offlineTransferRequested', (event, { _id }) => {
               this.$messageQueue.info('离线传输请求已完成，请等待文件处理完成')
               this.$emit('transfer-sent')

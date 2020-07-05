@@ -47,6 +47,9 @@
 </template>
 
 <script>
+  /**
+   * Settings entry component
+   */
   export default {
     name: 'Entry',
     props: {

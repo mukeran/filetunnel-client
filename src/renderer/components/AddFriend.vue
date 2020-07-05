@@ -13,6 +13,9 @@
 </template>
 
 <script>
+  /**
+   * Add friend component
+   */
   import { ipcRenderer } from 'electron'
   import status from '../../client/status'
   export default {

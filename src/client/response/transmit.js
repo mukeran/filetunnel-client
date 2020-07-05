@@ -4,6 +4,10 @@ import { callbacks, transmitConnect } from '../../p2p/transmit'
 import { logger } from '../../logger'
 import { mainWindow } from '../../main'
 
+/**
+ * Handle server tunnel transmit request from server
+ * @param packet Received packet
+ */
 export function sendTransmit (packet) {
   const { _id } = packet.data
   let socket = createConnection(config.server.TRANSFER_PORT, config.server.HOST)
@@ -19,6 +23,10 @@ export function sendTransmit (packet) {
   socket.write('0\n' + _id + '\n')
 }
 
+/**
+ * Handle transmit ready signal from server
+ * @param packet
+ */
 export function transmitReady (packet) {
   const { _id } = packet.data
   logger.debug(`get Transmit ready package ${JSON.stringify(packet)}`)

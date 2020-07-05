@@ -24,6 +24,9 @@
 </template>
 
 <script>
+  /**
+   * Settings component
+   */
   export default {
     name: 'Settings',
     mounted () {

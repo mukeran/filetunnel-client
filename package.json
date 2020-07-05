@@ -44,7 +44,7 @@
     },
     "mac": {
       "icon": "build/icons/icon.icns",
-      "target": "zip"
+      "target": "dmg"
     },
     "win": {
       "icon": "build/icons/icon.ico"
@@ -83,7 +83,7 @@
     "del": "^3.0.0",
     "devtron": "^1.4.0",
     "electron": "^2.0.4",
-    "electron-builder": "^20.19.2",
+    "electron-builder": "21.2.0",
     "electron-debug": "^1.5.0",
     "electron-devtools-installer": "^2.2.4",
     "eslint": "^4.19.1",

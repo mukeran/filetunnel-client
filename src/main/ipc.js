@@ -1,5 +1,7 @@
 /**
  * Register ipc channels
+ * Used for the communication between the main process and the renderer process
+ * 用于主进程和渲染进程之间的通讯
  */
 import { ipcMain } from 'electron'
 import { connectServer, registerAliveTimeout } from '../client'
@@ -17,6 +19,7 @@ import config from '../config'
 import { mainWindow } from '.'
 
 const channels = {
+  /* Connect server */
   connectServer: () => connectServer(),
   login: (event, { username, password, transferPort }) => {
     request.login(username, password, transferPort)
@@ -24,7 +27,7 @@ const channels = {
         event.sender.send('loggedIn', packet)
       }).catch(err => { logger.error(err) })
   },
-  /* 中转传输请求 */
+  /* Server tunnel transmit request */
   requestTransmit: (event, {targetUid, deadline, filePath, size, sha1}) => {
     request.requestTransmit(targetUid)
       .then((packet) => {
@@ -48,30 +51,35 @@ const channels = {
         connect(socket, transmitId, targetUid)
       }).catch(err => { logger.error(err) })
   },
+  /* Register */
   register: (event, { username, password, publicKey }) => {
     request.register(username, password, publicKey)
       .then((packet) => {
         event.sender.send('registered', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Change password */
   changePassword: (event, { password, newPassword }) => {
     request.changePassword(password, newPassword)
       .then((packet) => {
         event.sender.send('passwordChanged', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Change public key */
   changePublicKey: (event, {publicKey}) => {
     request.changePublicKey(publicKey)
       .then((packet) => {
         event.sender.send('publicKeyChanged', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Logout */
   logout: (event) => {
     request.logout()
       .then((packet) => {
         event.sender.send('loggedOut', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Resume session */
   resumeSession: (event) => {
     request.resumeSession(store.state.user.sessionId, store.state.system.transferPort)
       .then(packet => {
@@ -86,12 +94,14 @@ const channels = {
         }
       }).catch(err => { logger.error(err) })
   },
+  /* Request friend list */
   requestFriendList: (event) => {
     request.requestFriendList()
       .then((packet) => {
         event.sender.send('friendListRequested', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Calculate SHA1 for a file */
   calculateHash: (event, { filePath }) => {
     const fs = require('fs')
     const crypto = require('crypto')
@@ -105,25 +115,30 @@ const channels = {
       event.sender.send('hashCalculated', { filePath, sha1: hash.digest('hex') })
     })
   },
+  /* Register sending alive packet */
   registerAliveTimeout: () => registerAliveTimeout(true),
+  /* Send friend request */
   sendFriendRequest: (event, { username }) => {
     request.sendFriendRequest(username)
       .then(packet => {
         event.sender.send('friendRequestSent', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* delete a friend */
   deleteFriend: (event, { userId }) => {
     request.deleteFriend(userId)
       .then(packet => {
         event.sender.send('friendDeleted', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Answer a friend request */
   answerFriendRequest: (event, {_id, operation}) => {
     request.answerFriendRequest(_id, operation)
       .then(packet => {
         event.sender.send('friendRequestAnswered', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Generate RSA key pair using node-rsa library */
   generateKeyPair: (event) => {
     const NodeRSA = require('node-rsa')
     const key = new NodeRSA({ b: 2048 })
@@ -131,13 +146,17 @@ const channels = {
     const privateKey = key.exportKey('pkcs1-private-pem')
     event.sender.send('keyPairGenerated', { publicKey, privateKey })
   },
+  /* Stop P2P transfer server */
   stopTransferServer: () => { stopServer() },
+  /* Start P2P transfer server */
   startTransferServer: () => { startServer() },
+  /* Send file by P2P */
   sendFile: (event, { ip, port, myUid, targetUid, deadline, filePath, size, sha1 }) => {
     send(ip, port, myUid, targetUid, deadline, filePath, size, sha1).catch(err => {
       logger.error(err)
     })
   },
+  /* Request offline transfer */
   requestOfflineTransfer: (event, { userId, path, size, sha1, deadline, toUsername }) => {
     requestOfflineTransfer(userId, path, size, sha1, deadline, toUsername)
       .then(_id => {
@@ -147,12 +166,14 @@ const channels = {
         logger.error(err)
       })
   },
+  /* Query offline transfers */
   queryOfflineTransfers: (event) => {
     request.queryOfflineTransfers()
       .then(packet => {
         event.sender.send('offlineTransfersQueried', packet)
       }).catch(err => { logger.error(err) })
   },
+  /* Answer offline transfer */
   answerOfflineTransfer: (event, { _id, operation, fromUserId, filename, filePath, size, sha1, encryptedKey, fromUsername }) => {
     if (operation === 'accept') {
       acceptOfflineTransfer(_id, fromUserId, filename, filePath, size, sha1, encryptedKey, fromUsername)
@@ -170,6 +191,7 @@ const channels = {
         }).catch(err => { logger.error(err) })
     }
   },
+  /* Validate signature for offline transfer */
   validateSignature: (event, { fromUserId, filename, size, sha1, deadline, encryptedKey, signature }) => {
     validateSignature(fromUserId, filename, size, sha1, deadline, encryptedKey, signature)
       .then(result => {
@@ -182,6 +204,9 @@ const channels = {
   }
 }
 
+/**
+ * Register all above IPC
+ */
 export function registerIpc () {
   for (let key in channels) {
     ipcMain.on(key, channels[key])

@@ -19,6 +19,9 @@
 </template>
 
 <script>
+  /**
+   * Modify password component
+   */
   import { ipcRenderer } from 'electron'
   import status from '../../../../client/status'
   export default {

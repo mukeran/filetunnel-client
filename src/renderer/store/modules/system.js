@@ -1,3 +1,6 @@
+/**
+ * System about storage
+ */
 import status from '../../../client/status'
 
 const state = {

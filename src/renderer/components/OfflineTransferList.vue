@@ -115,6 +115,9 @@
 </template>
 
 <script>
+  /**
+   * Offline transfer list component
+   */
   import { ipcRenderer, remote } from 'electron'
   import { mapState } from 'vuex'
   import status from '../../client/status'

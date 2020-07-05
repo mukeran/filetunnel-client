@@ -32,6 +32,9 @@
 </template>
 
 <script>
+  /**
+   * Modify public key component
+   */
   import { ipcRenderer, remote } from 'electron'
   import status from '../../../../client/status'
   export default {

@@ -1,3 +1,6 @@
+/**
+ * 解决 ElementUI Message 显示重叠的 bug (通过引入一个队列，每 100ms 进行一次执行)
+ */
 import ElementUI from 'element-ui'
 
 let messageQueue = []

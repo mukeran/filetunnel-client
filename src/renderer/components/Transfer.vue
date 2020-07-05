@@ -105,9 +105,11 @@
 </template>
 
 <script>
+  /**
+   * Single transfer component
+   */
   import status from '../../client/status'
   import { ipcRenderer, shell, remote } from 'electron'
-
   export default {
     name: 'Transfer',
     props: {

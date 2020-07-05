@@ -13,6 +13,9 @@
 </template>
 
 <script>
+  /**
+   * Transfer list component
+   */
   import Transfer from './Transfer'
   import Notice from './Notice'
   import { mapState } from 'vuex'

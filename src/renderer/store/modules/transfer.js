@@ -1,3 +1,6 @@
+/**
+ * Transfer about storage
+ */
 import status from '../../../client/status'
 import { logger } from '../../../logger'
 
