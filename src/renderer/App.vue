@@ -5,6 +5,9 @@
 </template>
 
 <script>
+  /**
+   * Root component
+   */
   export default {
     name: 'FileTunnel'
   }

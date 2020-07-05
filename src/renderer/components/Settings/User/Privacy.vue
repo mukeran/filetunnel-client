@@ -10,6 +10,9 @@
 </template>
 
 <script>
+  /**
+   * Privacy settings component
+   */
   import Entry from '../Entry'
   export default {
     name: 'Privacy',

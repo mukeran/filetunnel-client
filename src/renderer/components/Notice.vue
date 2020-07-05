@@ -6,6 +6,9 @@
 </template>
 
 <script>
+  /**
+   * Large notice component (for empty and friendList and offlineTransferList logged out display)
+   */
   export default {
     name: 'Notice',
     props: {

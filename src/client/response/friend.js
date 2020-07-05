@@ -3,8 +3,8 @@ import { sendResponse } from '../index'
 import status from '../status'
 
 /**
- * Process friend requests
- * @param {Object} packet Packet received
+ * Handle new friend requests sent from server
+ * @param packet Received packet
  */
 export function sendFriendRequests (packet) {
   const { friendRequests } = packet.data

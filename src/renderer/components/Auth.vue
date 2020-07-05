@@ -52,6 +52,9 @@
 </template>
 
 <script>
+  /**
+   * Login and register component
+   */
   import { ipcRenderer, remote } from 'electron'
   import status from '../../client/status'
   import { mapState } from 'vuex'

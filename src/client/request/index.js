@@ -1,3 +1,6 @@
+/**
+ * Register all request actions
+ */
 import alive from './alive'
 import user from './user'
 import friends from './friend'

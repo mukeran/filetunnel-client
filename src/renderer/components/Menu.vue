@@ -56,6 +56,9 @@
 </template>
 
 <script>
+  /**
+   * Top menu component
+   */
   import FriendRequest from './FriendRequestList'
   import { mapState } from 'vuex'
   import status from '../../client/status'

@@ -1,3 +1,6 @@
+/**
+ * Offline transfer about storage
+ */
 import status from '../../../client/status'
 
 const state = {

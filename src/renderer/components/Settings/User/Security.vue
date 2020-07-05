@@ -36,6 +36,9 @@
 </template>
 
 <script>
+  /**
+   * Security settings component
+   */
   import Entry from '../Entry'
   import ModifyPassword from './ModifyPassword'
   import ModifyPublicKey from './ModifyPublicKey'

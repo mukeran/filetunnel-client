@@ -1,3 +1,7 @@
+/**
+ * User about storage
+ */
+
 const state = {
   _id: null,
   username: null,

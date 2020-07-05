@@ -10,7 +10,7 @@ import request from './request'
 import status from './status'
 
 let buffer = Buffer.alloc(0) // Data buffer
-let isProcessingData = false
+let isProcessingData = false // Mutex to prevent same time data process
 /**
  * Process received data from server
  * @param {Buffer} data Data received
@@ -83,7 +83,7 @@ function createPayload (packet) {
 }
 
 let aliveTimeout = null
-let doStopAliveTimeout = false
+let doStopAliveTimeout = false // Stop alive timeout signal
 /**
  * Register alive timeout
  */
@@ -165,6 +165,9 @@ export async function connectServer () {
 
 /**
  * Send request to server
+ * @param packet Packet to send
+ * @param timeout Milliseconds after when the packet is expired
+ * @returns {Promise<unknown>}
  */
 export function sendRequest (packet, timeout = config.connection.RESPONSE_TIMEOUT) {
   return new Promise((resolve, reject) => {
@@ -185,6 +188,11 @@ export function sendRequest (packet, timeout = config.connection.RESPONSE_TIMEOU
   })
 }
 
+/**
+ * Send response of server's request
+ * @param packet Packet to send
+ * @param reqPacket Original request packet
+ */
 export function sendResponse (packet, reqPacket) {
   const payload = createPayload({ ...packet, sq: reqPacket.sq })
   logger.debug(`Ready to send payload ${payload}`)

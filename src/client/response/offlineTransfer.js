@@ -3,8 +3,8 @@ import { sendResponse } from '../index'
 import status from '../status'
 
 /**
- * Process offline transfer requests
- * @param {Oblect} packet Packet received
+ * Handle offline transfers sent from server
+ * @param packet Received packet
  */
 export function sendOfflineTransfers (packet) {
   const { offlineTransfers } = packet.data

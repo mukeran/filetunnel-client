@@ -19,6 +19,9 @@
 </template>
 
 <script>
+  /**
+   * Universal transfer settings component
+   */
   import Entry from '../Entry'
   import { ipcRenderer } from 'electron'
   export default {

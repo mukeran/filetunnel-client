@@ -20,6 +20,9 @@
 </template>
 
 <script>
+  /**
+   * Dashboard component (Main page component)
+   */
   import Menu from './Menu'
   import Auth from './Auth'
   import { ipcRenderer } from 'electron'

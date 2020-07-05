@@ -5,6 +5,9 @@
 </template>
 
 <script>
+  /**
+   * Offline transfer compression and encryption progress
+   */
   import { mapState } from 'vuex'
   export default {
     name: 'OfflineTransferDataProgress',

@@ -1,3 +1,7 @@
+/**
+ * Friend about storage
+ */
+
 const state = {
   friends: [],
   friendRequests: []

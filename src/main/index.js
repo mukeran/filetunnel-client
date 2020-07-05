@@ -6,6 +6,7 @@ import { client } from '../client'
 import { server, startServer } from '../p2p/server'
 
 /**
+ * Main entry of the application
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
@@ -39,6 +40,7 @@ function createWindow () {
 }
 
 app.on('ready', () => {
+  /* Create main window and start P2P server */
   createWindow()
   startServer()
   /* Hide application menu */
@@ -46,12 +48,15 @@ app.on('ready', () => {
 })
 
 app.on('window-all-closed', async () => {
+  /* Close connection to server when window closed */
   if (client !== null) {
     await client.end()
   }
+  /* Close P2P server when window closed */
   if (server !== null) {
     await server.close()
   }
+  /* Quit application when not on macOS */
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -63,8 +68,10 @@ app.on('activate', () => {
   }
 })
 
+/* Register all IPC actions */
 registerIpc()
 
+/* Log all unhandled exception */
 process.on('unhandledRejection', function (promise, reason) {
   console.log(promise)
   console.log(reason)
