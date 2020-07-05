@@ -25,6 +25,7 @@ new Vue({
 
 store.dispatch('failAllCurrent')
 
+/** notification register for new P2P request */
 ipcRenderer.on('message', (event, message) => {
   ElementUI.Notification(message)
 })

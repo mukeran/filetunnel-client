@@ -24,7 +24,9 @@ const channels = {
         event.sender.send('loggedIn', packet)
       }).catch(err => { logger.error(err) })
   },
-  /* 中转传输请求 */
+  /**
+   * send transmit request, connect, and wait for transmitReady.
+   */
   requestTransmit: (event, {targetUid, deadline, filePath, size, sha1}) => {
     request.requestTransmit(targetUid)
       .then((packet) => {

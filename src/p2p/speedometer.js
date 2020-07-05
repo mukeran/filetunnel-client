@@ -1,3 +1,7 @@
+/**
+ * a module to calculate speed
+ */
+
 var tick = 1
 var maxTick = 65535
 var resolution = 4
@@ -12,6 +16,7 @@ module.exports = function (seconds) {
     if (timer.unref) timer.unref()
   }
 
+  /** resolution is buffer index per second */
   var size = resolution * (seconds || 5)
   var buffer = [0]
   var pointer = 1
@@ -22,6 +27,7 @@ module.exports = function (seconds) {
     if (dist > size) dist = size
     last = tick
 
+    /** assume speed keeps the same between this call and last call */
     while (dist--) {
       if (pointer === size) pointer = 0
       buffer[pointer] = buffer[pointer === 0 ? size - 1 : pointer - 1]

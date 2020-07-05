@@ -135,6 +135,7 @@
           ipcRenderer.send('fileRequest' + _id, { accept })
           return
         }
+        /** deadline */
         if (this.transfer.mode === 0 && this.transfer.deadline) {
           if (new Date(this.transfer.deadline) < new Date()) {
             ipcRenderer.send('cancelTransfer' + _id)

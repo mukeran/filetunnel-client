@@ -4,6 +4,12 @@ import { callbacks, transmitConnect } from '../../p2p/transmit'
 import { logger } from '../../logger'
 import { mainWindow } from '../../main'
 
+/**
+ * Got transmit request, start a connection to server's transfer port,
+ * and ready to receive P2P transfer request
+ * Rejection is delayed after receiving fileInfo.
+ * @param {Object} packet
+ */
 export function sendTransmit (packet) {
   const { _id } = packet.data
   let socket = createConnection(config.server.TRANSFER_PORT, config.server.HOST)
@@ -18,7 +24,10 @@ export function sendTransmit (packet) {
   logger.debug('sendTransmit responsed')
   socket.write('0\n' + _id + '\n')
 }
-
+/**
+ * got transmitReady package, call registered action.
+ * @param {} packet
+ */
 export function transmitReady (packet) {
   const { _id } = packet.data
   logger.debug(`get Transmit ready package ${JSON.stringify(packet)}`)
