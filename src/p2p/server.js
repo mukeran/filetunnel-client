@@ -20,7 +20,7 @@ const { ipcMain } = require('electron')
 export let server = null
 
 /**
- * find a useable port, start server and return the port
+ * start server on a useable port and update the port
  * @returns {Promise} port
  */
 export function startServer () {
@@ -70,11 +70,13 @@ export function stopServer () {
 }
 
 /**
- * callback function on P2P file request
+ * step 2 of P2P transfer
+ * Callback function on P2P file request
  * @param {Object} data the request received
  * @param {Socket} socket
  */
 export async function onFileRequest (data, socket, mode) {
+  /** check signature */
   let sig = data.signature
   delete data.signature
   data.verify = JSON.stringify(data)
@@ -90,10 +92,12 @@ export async function onFileRequest (data, socket, mode) {
   } else {
     delete data.verify
   }
+  /** decrypt key */
   let privateKey = await getPrivateKey()
   logger.debug('my private key: ' + privateKey)
   data.key = decryptKey(data.key, privateKey)
   data.fileInfo = JSON.parse(decryptString(data.key.slice(0, 32), data.fileInfo))
+  /** add task to list and pop message */
   let _id = store.state.transfer._id
   await store.dispatch('getId')
   let transferTask = {
@@ -114,6 +118,7 @@ export async function onFileRequest (data, socket, mode) {
   logger.info(`P2P file request: ${JSON.stringify(data)}`)
   socket._id = _id
 
+  /** wait for user */
   ipcMain.once('fileRequest' + _id, (event, { accept, filePath }) => {
     if (accept) {
       logger.debug('fileRequest' + _id + ' is accepted')
@@ -133,6 +138,7 @@ export async function onFileRequest (data, socket, mode) {
 }
 
 /**
+ * step 3 of P2P transfer
  * as a callback for IPC after user acception
  * @param {Object} data
  * @param {Socket} socket
@@ -151,13 +157,12 @@ export async function acceptFileRequest (data, socket, savePath) {
   writeStream.on('error', (err) => {
     logger.error(err)
     store.dispatch('failTransfer', { _id: socket._id })
-    // throw err
   })
+  /** when data connection get currupted, deciper will generate error because of padding */
   let decipher = createDecipheriv(cipherAlgorithm, data.key.slice(0, 32), data.key.slice(32))
   decipher.on('error', (err) => {
     logger.error(err)
     store.dispatch('failTransfer', { _id: socket._id })
-    // throw err
   })
   let unzip = createUnzip()
   // stream.pipeline([socket, decipher, unzip, writeStream], () => {
@@ -178,6 +183,7 @@ export async function acceptFileRequest (data, socket, savePath) {
 }
 
 /**
+ * step 3 of P2P transfer
  * callback for rejection
  * @param {Object} data
  * @param {Socket} socket
@@ -192,7 +198,8 @@ export function rejectFileRequest (data, socket) {
 }
 
 /**
- * buffer process on socket connection
+ * Buffer process on socket connection
+ * Get size and sq, unpack data
  * @param {Object} data
  * @param {Object} pdata
  * @param {Function} callback
@@ -254,8 +261,8 @@ export function processData (data, pdata, callback) {
 }
 
 /**
- * pack size and sq before sending
- * @param {*} data
+ * Pack size and sq before sending.
+ * @param {Buffer} data
  * @param {Number} sq
  */
 export function packData (data, sq) {
@@ -263,6 +270,11 @@ export function packData (data, sq) {
   return Buffer.concat([Buffer.from(buf.length + '\n'), buf])
 }
 
+/**
+ * find friend's name by user id
+ * by querying in vuex store
+ * @param {String} uid
+ */
 export function getFriendName (uid) {
   return store.state.friend.friends.find(friend => friend._id === uid).username
 }

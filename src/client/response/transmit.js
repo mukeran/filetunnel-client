@@ -6,6 +6,9 @@ import { mainWindow } from '../../main'
 
 /**
  * Handle server tunnel transmit request from server
+ * Got transmit request, start a connection to server's transfer port,
+ * and ready to receive P2P transfer request
+ * Rejection is delayed after receiving fileInfo.
  * @param packet Received packet
  */
 export function sendTransmit (packet) {
@@ -25,6 +28,7 @@ export function sendTransmit (packet) {
 
 /**
  * Handle transmit ready signal from server
+ * got transmitReady package, call registered action.
  * @param packet
  */
 export function transmitReady (packet) {

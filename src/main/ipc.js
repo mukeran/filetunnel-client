@@ -27,7 +27,10 @@ const channels = {
         event.sender.send('loggedIn', packet)
       }).catch(err => { logger.error(err) })
   },
-  /* Server tunnel transmit request */
+  /**
+   * Server tunnel transmit request
+   * send transmit request, connect, and wait for transmitReady.
+   */
   requestTransmit: (event, {targetUid, deadline, filePath, size, sha1}) => {
     request.requestTransmit(targetUid)
       .then((packet) => {

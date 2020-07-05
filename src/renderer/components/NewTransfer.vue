@@ -85,6 +85,9 @@
       })
     },
     methods: {
+      /**
+       * turn size in bytes into readable size
+       */
       getReadableFileSizeString: function (fileSizeInBytes) {
         if (fileSizeInBytes === 0) return ''
         let i = -1
@@ -106,6 +109,7 @@
         remote.dialog.showOpenDialog({
           properties: ['openFile']
         }, filePath => {
+          /** user canceled */
           if (typeof filePath === 'undefined') return
           this.form.filePath = filePath[0]
           const fs = remote.require('fs')
@@ -131,6 +135,7 @@
           this.$messageQueue.error('SHA1计算中或者计算错误，请重新选择文件')
           return
         }
+        /** get selected friend */
         let current
         let friends = this.friends
         for (let i = 0; i < friends.length; i++) {
@@ -139,7 +144,7 @@
             break
           }
         }
-        if (current.port === '0' || current.port === 0) {
+        if (this.mode !== '2' && (current.port === '0' || current.port === 0)) {
           this.$messageQueue.error('对方没有启用P2P传输')
           return
         }
