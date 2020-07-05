@@ -4,6 +4,10 @@ import { callbacks, transmitConnect } from '../../p2p/transmit'
 import { logger } from '../../logger'
 import { mainWindow } from '../../main'
 
+/**
+ * 发送服务器中转文件
+ * @param {*} packet 数据
+ */
 export function sendTransmit (packet) {
   const { _id } = packet.data
   let socket = createConnection(config.server.TRANSFER_PORT, config.server.HOST)
@@ -18,7 +22,10 @@ export function sendTransmit (packet) {
   logger.debug('sendTransmit responsed')
   socket.write('0\n' + _id + '\n')
 }
-
+/**
+ * 接收到transmitReady指令，准备开始传输
+ * @param {} packet
+ */
 export function transmitReady (packet) {
   const { _id } = packet.data
   logger.debug(`get Transmit ready package ${JSON.stringify(packet)}`)
