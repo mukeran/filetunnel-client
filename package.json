@@ -56,7 +56,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "element-ui": "^2.13.2",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.0",
     "node-rsa": "^1.0.8",
     "tmp": "^0.2.1",
     "vue": "^2.5.16",
